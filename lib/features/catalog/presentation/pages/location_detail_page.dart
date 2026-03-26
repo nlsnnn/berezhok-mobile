@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:berezhok/core/api/api_exceptions.dart';
 import 'package:berezhok/core/theme/app_colors.dart';
 import 'package:berezhok/core/theme/app_spacing.dart';
 import 'package:berezhok/core/theme/app_typography.dart';
@@ -12,6 +13,7 @@ import 'package:berezhok/features/catalog/domain/location.dart';
 import 'package:berezhok/features/catalog/presentation/widgets/review_card.dart';
 import 'package:berezhok/features/catalog/presentation/widgets/surprise_box_card.dart';
 import 'package:berezhok/features/map/providers/map_providers.dart';
+import 'package:berezhok/features/orders/providers/order_providers.dart';
 
 /// Weekday code labels for working-hours display.
 const _dayLabels = <String, String>{
@@ -35,15 +37,23 @@ const _dayToWeekday = <String, int>{
   'sun': 7,
 };
 
-class LocationDetailPage extends ConsumerWidget {
+class LocationDetailPage extends ConsumerStatefulWidget {
   const LocationDetailPage({required this.locationId, super.key});
 
   final String locationId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final detailAsync = ref.watch(locationDetailProvider(locationId));
-    final reviewsAsync = ref.watch(locationReviewsProvider(locationId));
+  ConsumerState<LocationDetailPage> createState() =>
+      _LocationDetailPageState();
+}
+
+class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
+  String? _bookingBoxId;
+
+  @override
+  Widget build(BuildContext context) {
+    final detailAsync = ref.watch(locationDetailProvider(widget.locationId));
+    final reviewsAsync = ref.watch(locationReviewsProvider(widget.locationId));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -56,7 +66,8 @@ class LocationDetailPage extends ConsumerWidget {
           title: 'Ошибка загрузки',
           subtitle: 'Не удалось загрузить информацию о заведении',
           actionLabel: 'Повторить',
-          onAction: () => ref.invalidate(locationDetailProvider(locationId)),
+          onAction: () =>
+              ref.invalidate(locationDetailProvider(widget.locationId)),
         ),
         data: (location) {
           final boxes = location.activeBoxes;
@@ -170,9 +181,9 @@ class LocationDetailPage extends ConsumerWidget {
                                   const EdgeInsets.only(bottom: AppSpacing.md),
                               child: SurpriseBoxCard(
                                 box: box,
-                                onBook: () {
-                                  // TODO: navigate to order creation
-                                },
+                                onBook: _bookingBoxId == null
+                                    ? () => _bookBox(box.id)
+                                    : null,
                               ),
                             )),
 
@@ -247,6 +258,66 @@ class LocationDetailPage extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  Future<void> _bookBox(String boxId) async {
+    if (_bookingBoxId != null) return;
+
+    setState(() => _bookingBoxId = boxId);
+    try {
+      final result = await ref.read(ordersProvider.notifier).createOrder(boxId);
+      final paymentUri = Uri.tryParse(result.paymentUrl);
+
+      if (paymentUri == null) {
+        throw const ValidationException(
+          message: 'Некорректная ссылка на оплату',
+        );
+      }
+
+      final launched = await launchUrl(
+        paymentUri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Не удалось открыть страницу оплаты'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Заказ создан. Завершите оплату в браузере'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Не удалось создать заказ. Попробуйте еще раз'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _bookingBoxId = null);
+      }
+    }
   }
 }
 

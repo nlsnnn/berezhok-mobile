@@ -13,6 +13,7 @@ import 'package:berezhok/features/map/presentation/pages/map_page.dart';
 import 'package:berezhok/features/orders/presentation/pages/orders_page.dart';
 import 'package:berezhok/features/orders/presentation/pages/order_detail_page.dart';
 import 'package:berezhok/features/profile/presentation/pages/profile_page.dart';
+import 'package:berezhok/core/services/deep_link_service.dart';
 
 // Route paths as constants
 abstract final class AppRoutes {
@@ -27,6 +28,12 @@ abstract final class AppRoutes {
   static const profile = '/profile';
 }
 
+final deepLinkServiceProvider = Provider<DeepLinkService>((ref) {
+  final service = DeepLinkService();
+  ref.onDispose(service.dispose);
+  return service;
+});
+
 final routerProvider = Provider<GoRouter>((ref) {
   // Listen authState and trigger router refresh without recreating GoRouter
   final notifier = _GoRouterAuthNotifier(ref);
@@ -36,7 +43,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final initialAuth = ref.read(authStateProvider);
   final initialLoggedIn = initialAuth.valueOrNull != null;
 
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: initialLoggedIn ? AppRoutes.map : AppRoutes.splash,
     refreshListenable: notifier,
     redirect: (context, state) {
@@ -126,6 +133,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  // Initialize deep link service with the router
+  final deepLinkService = ref.read(deepLinkServiceProvider);
+  deepLinkService.init(router);
+
+  return router;
 });
 
 class _GoRouterAuthNotifier extends ChangeNotifier {

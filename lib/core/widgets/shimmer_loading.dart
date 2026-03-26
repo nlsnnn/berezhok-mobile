@@ -139,13 +139,10 @@ class ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        for (int i = 0; i < itemCount; i++) ...[
-          ShimmerCard(imageHeight: imageHeight),
-          if (i < itemCount - 1) SizedBox(height: spacing),
-        ],
-      ],
+    return ListView.separated(
+      itemCount: itemCount,
+      itemBuilder: (context, index) => ShimmerCard(imageHeight: imageHeight),
+      separatorBuilder: (_, __) => SizedBox(height: spacing),
     );
   }
 }

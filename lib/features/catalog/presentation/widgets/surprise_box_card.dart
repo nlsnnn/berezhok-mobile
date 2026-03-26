@@ -19,9 +19,13 @@ class SurpriseBoxCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompact = constraints.maxWidth < 260;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           // Top row: name + discount badge
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,49 +74,105 @@ class SurpriseBoxCard extends StatelessWidget {
 
           const SizedBox(height: AppSpacing.md),
 
-          // Price row + pickup time
-          Row(
-            children: [
-              PriceTag(
-                discountPrice: box.discountPrice,
-                originalPrice: box.originalPrice,
-              ),
-              const Spacer(),
-              Icon(
-                Icons.access_time_rounded,
-                size: 16,
-                color: AppColors.textSecondary,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                box.pickupTimeFormatted,
-                style: AppTypography.caption,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: AppSpacing.md),
-
-          // Bottom row: remaining + book button
-          Row(
-            children: [
-              Text(
-                'Осталось: ${box.quantityAvailable}',
-                style: AppTypography.caption.copyWith(
-                  color: box.quantityAvailable <= 2
-                      ? AppColors.warning
-                      : AppColors.textSecondary,
+              // Price row + pickup time
+              if (isCompact)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    PriceTag(
+                      discountPrice: box.discountPrice,
+                      originalPrice: box.originalPrice,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 16,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Text(
+                          box.pickupTimeFormatted,
+                          style: AppTypography.caption,
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              else
+                Row(
+                  children: [
+                    PriceTag(
+                      discountPrice: box.discountPrice,
+                      originalPrice: box.originalPrice,
+                    ),
+                    const Spacer(),
+                    Icon(
+                      Icons.access_time_rounded,
+                      size: 16,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Flexible(
+                      child: Text(
+                        box.pickupTimeFormatted,
+                        style: AppTypography.caption,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const Spacer(),
-              AppButton(
-                label: 'Забронировать',
-                size: AppButtonSize.small,
-                onPressed: box.quantityAvailable > 0 ? onBook : null,
-              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              // Bottom row: remaining + book button
+              if (isCompact)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Осталось: ${box.quantityAvailable}',
+                      style: AppTypography.caption.copyWith(
+                        color: box.quantityAvailable <= 2
+                            ? AppColors.warning
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: AppButton(
+                        label: 'Забронировать',
+                        size: AppButtonSize.small,
+                        onPressed: box.quantityAvailable > 0 ? onBook : null,
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Row(
+                  children: [
+                    Text(
+                      'Осталось: ${box.quantityAvailable}',
+                      style: AppTypography.caption.copyWith(
+                        color: box.quantityAvailable <= 2
+                            ? AppColors.warning
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                    const Spacer(),
+                    AppButton(
+                      label: 'Забронировать',
+                      size: AppButtonSize.small,
+                      onPressed: box.quantityAvailable > 0 ? onBook : null,
+                    ),
+                  ],
+                ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
