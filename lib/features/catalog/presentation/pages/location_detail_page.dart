@@ -347,26 +347,15 @@ class _CoverSection extends StatelessWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            // Gradient background with category color
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    location.category.color,
-                    location.category.color.withValues(alpha: 0.7),
-                  ],
-                ),
-              ),
-              child: Center(
-                child: Icon(
-                  location.category.icon,
-                  size: 80,
-                  color: Colors.white.withValues(alpha: 0.3),
-                ),
-              ),
-            ),
+            // Cover image or gradient fallback
+            if (location.coverImageUrl != null)
+              Image.network(
+                location.coverImageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _GradientFallback(location: location),
+              )
+            else
+              _GradientFallback(location: location),
 
             // Bottom gradient overlay for text readability
             Positioned(
@@ -421,6 +410,35 @@ class _CoverSection extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GradientFallback extends StatelessWidget {
+  const _GradientFallback({required this.location});
+
+  final FoodLocation location;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            location.category.color,
+            location.category.color.withValues(alpha: 0.7),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          location.category.icon,
+          size: 80,
+          color: Colors.white.withValues(alpha: 0.3),
         ),
       ),
     );
