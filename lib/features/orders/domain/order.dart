@@ -52,23 +52,31 @@ class Order {
         _ => status.name,
       };
 
-  factory Order.fromJson(Map<String, dynamic> json) => Order(
-        id: json['id'] as String,
-        status: _parseStatus(json['status'] as String),
-        pickupCode: json['pickup_code'] as String,
-        qrCodeUrl: json['qr_code_url'] as String?,
-        amount: (json['amount'] as num).toDouble(),
-        box: OrderBox.fromJson(json['box'] as Map<String, dynamic>),
-        location:
-            OrderLocation.fromJson(json['location'] as Map<String, dynamic>),
-        pickupTimeStart: DateTime.parse(json['pickup_time_start'] as String),
-        pickupTimeEnd: DateTime.parse(json['pickup_time_end'] as String),
-        createdAt: DateTime.parse(json['created_at'] as String),
-        confirmedAt: json['confirmed_at'] != null
-            ? DateTime.parse(json['confirmed_at'] as String)
-            : null,
-        hasReview: json['has_review'] as bool? ?? false,
-      );
+  factory Order.fromJson(Map<String, dynamic> json) {
+    final pickupTime = json['pickup_time'] as Map<String, dynamic>?;
+
+    return Order(
+      id: json['id'] as String,
+      status: _parseStatus(json['status'] as String),
+      pickupCode: json['pickup_code'] as String,
+      qrCodeUrl: json['qr_code_url'] as String?,
+      amount: (json['amount'] as num).toDouble(),
+      box: OrderBox.fromJson(json['box'] as Map<String, dynamic>),
+      location:
+          OrderLocation.fromJson(json['location'] as Map<String, dynamic>),
+      pickupTimeStart: pickupTime != null
+          ? DateTime.parse(pickupTime['start'] as String)
+          : DateTime.parse(json['pickup_time_start'] as String),
+      pickupTimeEnd: pickupTime != null
+          ? DateTime.parse(pickupTime['end'] as String)
+          : DateTime.parse(json['pickup_time_end'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      confirmedAt: json['confirmed_at'] != null
+          ? DateTime.parse(json['confirmed_at'] as String)
+          : null,
+      hasReview: json['has_review'] as bool? ?? false,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -148,13 +156,21 @@ class OrderLocation {
     required this.longitude,
   });
 
-  factory OrderLocation.fromJson(Map<String, dynamic> json) => OrderLocation(
-        name: json['name'] as String,
-        address: json['address'] as String,
-        phone: json['phone'] as String?,
-        latitude: (json['latitude'] as num).toDouble(),
-        longitude: (json['longitude'] as num).toDouble(),
-      );
+  factory OrderLocation.fromJson(Map<String, dynamic> json) {
+    final coordinates = json['coordinates'] as Map<String, dynamic>?;
+
+    return OrderLocation(
+      name: json['name'] as String,
+      address: json['address'] as String,
+      phone: json['phone'] as String?,
+      latitude: coordinates != null
+          ? (coordinates['lat'] as num).toDouble()
+          : (json['latitude'] as num).toDouble(),
+      longitude: coordinates != null
+          ? (coordinates['lng'] as num).toDouble()
+          : (json['longitude'] as num).toDouble(),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'name': name,

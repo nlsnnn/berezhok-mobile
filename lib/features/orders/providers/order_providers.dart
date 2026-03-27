@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:berezhok/core/api/api_providers.dart';
 import 'package:berezhok/features/orders/domain/order.dart';
+import 'package:berezhok/features/orders/domain/order_list_item.dart';
 import 'package:berezhok/features/orders/data/repositories/order_repository.dart';
 import 'package:berezhok/features/orders/data/repositories/mock_order_repository.dart';
 import 'package:berezhok/features/orders/data/repositories/api_order_repository.dart';
@@ -17,11 +18,11 @@ final orderRepositoryProvider = Provider<OrderRepository>((ref) {
 });
 
 final ordersProvider =
-    AsyncNotifierProvider<OrdersNotifier, List<Order>>(OrdersNotifier.new);
+    AsyncNotifierProvider<OrdersNotifier, List<OrderListItem>>(OrdersNotifier.new);
 
-class OrdersNotifier extends AsyncNotifier<List<Order>> {
+class OrdersNotifier extends AsyncNotifier<List<OrderListItem>> {
   @override
-  Future<List<Order>> build() async {
+  Future<List<OrderListItem>> build() async {
     final repo = ref.read(orderRepositoryProvider);
     return repo.getOrders();
   }
@@ -69,12 +70,12 @@ final orderDetailProvider =
   return repo.getOrderDetail(orderId);
 });
 
-final activeOrdersProvider = Provider<List<Order>>((ref) {
+final activeOrdersProvider = Provider<List<OrderListItem>>((ref) {
   final orders = ref.watch(ordersProvider).valueOrNull ?? [];
   return orders.where((o) => o.isActive).toList();
 });
 
-final pastOrdersProvider = Provider<List<Order>>((ref) {
+final pastOrdersProvider = Provider<List<OrderListItem>>((ref) {
   final orders = ref.watch(ordersProvider).valueOrNull ?? [];
   return orders.where((o) => !o.isActive).toList();
 });

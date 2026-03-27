@@ -8,11 +8,12 @@ import 'package:berezhok/core/utils/formatters.dart';
 import 'package:berezhok/core/widgets/app_card.dart';
 import 'package:berezhok/core/widgets/status_badge.dart';
 import 'package:berezhok/features/orders/domain/order.dart';
+import 'package:berezhok/features/orders/domain/order_list_item.dart';
 
 class OrderCard extends StatelessWidget {
   const OrderCard({required this.order, super.key});
 
-  final Order order;
+  final OrderListItem order;
 
   Color get _accentColor => switch (order.status) {
         OrderStatus.paid => const Color(0xFFF9A825),
@@ -63,7 +64,7 @@ class OrderCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            order.box.name,
+                            order.boxName,
                             style: AppTypography.subtitle1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -77,7 +78,7 @@ class OrderCard extends StatelessWidget {
 
                     // Row 2: location name
                     Text(
-                      order.location.name,
+                      order.locationName,
                       style: AppTypography.body2.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -92,7 +93,7 @@ class OrderCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             '${formatPrice(order.amount)}  ·  '
-                            '${formatPickupTime(order.pickupTimeStart, order.pickupTimeEnd)}',
+                            '${formatPickupTimeStart(order.pickupTimeStart)}',
                             style: AppTypography.caption,
                             overflow: TextOverflow.ellipsis,
                           ),

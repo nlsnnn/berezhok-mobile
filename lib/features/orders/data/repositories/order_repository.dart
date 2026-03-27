@@ -1,8 +1,9 @@
 import 'package:berezhok/features/orders/domain/order.dart';
+import 'package:berezhok/features/orders/domain/order_list_item.dart';
 
 abstract class OrderRepository {
   Future<CreateOrderResult> createOrder(String boxId);
-  Future<List<Order>> getOrders({
+  Future<List<OrderListItem>> getOrders({
     String? status,
     int limit = 20,
     int offset = 0,

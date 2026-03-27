@@ -60,6 +60,24 @@ String formatPickupTime(DateTime start, DateTime end) {
   return '$dayLabel, ${_timeFormat.format(start)}–${_timeFormat.format(end)}';
 }
 
+/// Format pickup start time only: "Сегодня, 18:00" / "Завтра, 18:00" / "25 янв, 18:00"
+String formatPickupTimeStart(DateTime start) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final startDay = DateTime(start.year, start.month, start.day);
+
+  final String dayLabel;
+  if (startDay == today) {
+    dayLabel = 'Сегодня';
+  } else if (startDay == today.add(const Duration(days: 1))) {
+    dayLabel = 'Завтра';
+  } else {
+    dayLabel = _dayMonthFormat.format(start);
+  }
+
+  return '$dayLabel, ${_timeFormat.format(start)}';
+}
+
 /// Format relative time in Russian: "5 мин назад", "2 часа назад", "вчера", "25 янв"
 String formatRelativeTime(DateTime dateTime) {
   final diff = timeAgo(dateTime);

@@ -1,6 +1,7 @@
 import 'package:berezhok/core/api/api_client.dart';
 import 'package:berezhok/core/api/api_endpoints.dart';
 import 'package:berezhok/features/orders/domain/order.dart';
+import 'package:berezhok/features/orders/domain/order_list_item.dart';
 import 'order_repository.dart';
 
 class ApiOrderRepository implements OrderRepository {
@@ -30,14 +31,14 @@ class ApiOrderRepository implements OrderRepository {
   }
 
   @override
-  Future<List<Order>> getOrders({
+  Future<List<OrderListItem>> getOrders({
     String? status,
     int limit = 20,
     int offset = 0,
   }) async {
-    final response = await _apiClient.getPaginated<Order>(
+    final response = await _apiClient.getPaginated<OrderListItem>(
       ApiEndpoints.orders,
-      fromJson: Order.fromJson,
+      fromJson: OrderListItem.fromJson,
       queryParameters: {
         if (status != null) 'status': status,
         'limit': limit,

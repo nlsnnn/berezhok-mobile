@@ -1,4 +1,5 @@
 import 'package:berezhok/features/orders/domain/order.dart';
+import 'package:berezhok/features/orders/domain/order_list_item.dart';
 import 'package:berezhok/features/orders/data/repositories/order_repository.dart';
 
 class MockOrderRepository implements OrderRepository {
@@ -37,7 +38,7 @@ class MockOrderRepository implements OrderRepository {
   }
 
   @override
-  Future<List<Order>> getOrders({
+  Future<List<OrderListItem>> getOrders({
     String? status,
     int limit = 20,
     int offset = 0,
@@ -50,8 +51,21 @@ class MockOrderRepository implements OrderRepository {
     }
 
     final end = (offset + limit).clamp(0, result.length);
-    return result.sublist(offset.clamp(0, result.length), end);
+    final items = result.sublist(offset.clamp(0, result.length), end);
+    return items.map(_toListItem).toList();
   }
+
+  static OrderListItem _toListItem(Order order) => OrderListItem(
+        id: order.id,
+        status: order.status,
+        pickupCode: order.pickupCode,
+        amount: order.amount,
+        boxName: order.box.name,
+        locationName: order.location.name,
+        pickupTimeStart: order.pickupTimeStart,
+        createdAt: order.createdAt,
+        hasReview: order.hasReview,
+      );
 
   @override
   Future<Order> getOrderDetail(String orderId) async {
