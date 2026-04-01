@@ -10,11 +10,13 @@ class SurpriseBoxCard extends StatelessWidget {
   const SurpriseBoxCard({
     required this.box,
     this.onBook,
+    this.isLoading = false,
     super.key,
   });
 
   final SurpriseBox box;
   final VoidCallback? onBook;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +148,8 @@ class SurpriseBoxCard extends StatelessWidget {
                       child: AppButton(
                         label: 'Забронировать',
                         size: AppButtonSize.small,
-                        onPressed: box.quantityAvailable > 0 ? onBook : null,
+                        isLoading: isLoading,
+                        onPressed: box.quantityAvailable > 0 && !isLoading ? onBook : null,
                       ),
                     ),
                   ],
@@ -166,7 +169,8 @@ class SurpriseBoxCard extends StatelessWidget {
                     AppButton(
                       label: 'Забронировать',
                       size: AppButtonSize.small,
-                      onPressed: box.quantityAvailable > 0 ? onBook : null,
+                      isLoading: isLoading,
+                      onPressed: box.quantityAvailable > 0 && !isLoading ? onBook : null,
                     ),
                   ],
                 ),

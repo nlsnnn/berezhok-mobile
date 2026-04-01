@@ -150,16 +150,23 @@ class _AppButtonState extends State<AppButton> {
         child: Material(
           color: bg,
           shape: shape,
-          child: InkWell(
-            onTap: _isEnabled ? widget.onPressed : null,
-            onTapDown: _isEnabled ? (_) => setState(() => _isPressed = true) : null,
-            onTapUp: _isEnabled ? (_) => setState(() => _isPressed = false) : null,
-            onTapCancel: _isEnabled ? () => setState(() => _isPressed = false) : null,
-            customBorder: shape,
-            splashColor: fg.withValues(alpha: 0.08),
-            highlightColor: fg.withValues(alpha: 0.04),
-            child: buttonContent,
-          ),
+          child: _isEnabled
+              ? InkWell(
+                  onTap: widget.onPressed,
+                  onTapDown: (_) => setState(() => _isPressed = true),
+                  onTapUp: (_) => setState(() => _isPressed = false),
+                  onTapCancel: () => setState(() => _isPressed = false),
+                  customBorder: shape,
+                  splashColor: fg.withValues(alpha: 0.08),
+                  highlightColor: fg.withValues(alpha: 0.04),
+                  child: buttonContent,
+                )
+              : IgnorePointer(
+                  child: InkWell(
+                    customBorder: shape,
+                    child: buttonContent,
+                  ),
+                ),
         ),
       ),
     );

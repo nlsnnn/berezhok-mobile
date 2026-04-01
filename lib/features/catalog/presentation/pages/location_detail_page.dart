@@ -49,6 +49,9 @@ class LocationDetailPage extends ConsumerStatefulWidget {
 
 class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
   String? _bookingBoxId;
+  DateTime? _lastBookingTime;
+
+  static const _debounceDuration = Duration(seconds: 2);
 
   @override
   Widget build(BuildContext context) {
@@ -181,6 +184,7 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
                                   const EdgeInsets.only(bottom: AppSpacing.md),
                               child: SurpriseBoxCard(
                                 box: box,
+                                isLoading: _bookingBoxId != null,
                                 onBook: _bookingBoxId == null
                                     ? () => _bookBox(box.id)
                                     : null,
@@ -263,7 +267,16 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
   Future<void> _bookBox(String boxId) async {
     if (_bookingBoxId != null) return;
 
-    setState(() => _bookingBoxId = boxId);
+    final now = DateTime.now();
+    if (_lastBookingTime != null &&
+        now.difference(_lastBookingTime!) < _debounceDuration) {
+      return;
+    }
+
+    setState(() {
+      _bookingBoxId = boxId;
+      _lastBookingTime = now;
+    });
     try {
       final result = await ref.read(ordersProvider.notifier).createOrder(boxId);
       final paymentUri = Uri.tryParse(result.paymentUrl);
