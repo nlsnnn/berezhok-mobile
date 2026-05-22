@@ -4,11 +4,7 @@ import 'package:berezhok/core/theme/app_spacing.dart';
 import 'package:berezhok/core/theme/app_typography.dart';
 
 class StatusBadge extends StatelessWidget {
-  const StatusBadge({
-    required this.status,
-    this.compact = false,
-    super.key,
-  });
+  const StatusBadge({required this.status, this.compact = false, super.key});
 
   final String status;
   final bool compact;
@@ -17,8 +13,11 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final (:label, :color) = _resolve(status);
 
-    final textStyle = (compact ? AppTypography.caption : AppTypography.subtitle2)
-        .copyWith(color: color, fontWeight: FontWeight.w600);
+    final textStyle =
+        (compact ? AppTypography.caption : AppTypography.subtitle2).copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
+        );
 
     return Container(
       padding: compact
@@ -34,6 +33,10 @@ class StatusBadge extends StatelessWidget {
 
   static ({String label, Color color}) _resolve(String status) {
     return switch (status) {
+      'pending' || 'pending_payment' => (
+        label: 'Ожидает оплаты',
+        color: const Color(0xFF757575),
+      ),
       'paid' => (label: 'Оплачен', color: const Color(0xFFF9A825)),
       'confirmed' => (label: 'Подтверждён', color: const Color(0xFF1E88E5)),
       'picked_up' => (label: 'Выдан', color: const Color(0xFF3949AB)),

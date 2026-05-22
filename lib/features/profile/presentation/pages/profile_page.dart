@@ -263,17 +263,6 @@ class ProfilePage extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xxl),
             Text('Как работает Бережок?', style: AppTypography.heading3),
             const SizedBox(height: AppSpacing.lg),
             _AboutStep(

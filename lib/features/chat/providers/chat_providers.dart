@@ -21,11 +21,14 @@ enum ChatConnectionStatus {
   closed,
 }
 
+const _messagePageSize = 50;
+
 class ChatState {
   final List<ChatMessage> messages;
   final ChatConnectionStatus connectionStatus;
   final bool isSending;
   final bool isLoadingOlder;
+  final bool hasOlderMessages;
   final String? errorMessage;
 
   const ChatState({
@@ -33,6 +36,7 @@ class ChatState {
     this.connectionStatus = ChatConnectionStatus.connecting,
     this.isSending = false,
     this.isLoadingOlder = false,
+    this.hasOlderMessages = false,
     this.errorMessage,
   });
 
@@ -43,6 +47,7 @@ class ChatState {
     ChatConnectionStatus? connectionStatus,
     bool? isSending,
     bool? isLoadingOlder,
+    bool? hasOlderMessages,
     String? errorMessage,
     bool clearError = false,
   }) => ChatState(
@@ -50,6 +55,7 @@ class ChatState {
     connectionStatus: connectionStatus ?? this.connectionStatus,
     isSending: isSending ?? this.isSending,
     isLoadingOlder: isLoadingOlder ?? this.isLoadingOlder,
+    hasOlderMessages: hasOlderMessages ?? this.hasOlderMessages,
     errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
   );
 }
@@ -113,12 +119,11 @@ class ChatController extends FamilyAsyncNotifier<ChatState, String> {
       _connection?.close();
     });
 
-    final messages = await ref
-        .read(chatRepositoryProvider)
-        .getMessages(orderId);
+    final page = await _fetchMessages(orderId);
     final connectionStatus = await _connect(orderId);
     return ChatState(
-      messages: _sortMessages(messages),
+      messages: page.messages,
+      hasOlderMessages: page.hasOlderMessages,
       connectionStatus: connectionStatus,
     );
   }
@@ -128,19 +133,19 @@ class ChatController extends FamilyAsyncNotifier<ChatState, String> {
     if (current == null ||
         current.isLoadingOlder ||
         current.messages.isEmpty ||
+        !current.hasOlderMessages ||
         current.isClosed) {
       return;
     }
 
     state = AsyncData(current.copyWith(isLoadingOlder: true, clearError: true));
     try {
-      final older = await ref
-          .read(chatRepositoryProvider)
-          .getMessages(arg, before: current.messages.first.id);
+      final page = await _fetchMessages(arg, before: current.messages.first.id);
       state = AsyncData(
         current.copyWith(
-          messages: _mergeMessages([...older, ...current.messages]),
+          messages: _mergeMessages([...page.messages, ...current.messages]),
           isLoadingOlder: false,
+          hasOlderMessages: page.hasOlderMessages,
         ),
       );
     } catch (error) {
@@ -197,11 +202,12 @@ class ChatController extends FamilyAsyncNotifier<ChatState, String> {
     );
 
     try {
-      final messages = await ref.read(chatRepositoryProvider).getMessages(arg);
+      final page = await _fetchMessages(arg);
       final status = await _connect(arg);
       state = AsyncData(
         current.copyWith(
-          messages: _sortMessages(messages),
+          messages: page.messages,
+          hasOlderMessages: page.hasOlderMessages,
           connectionStatus: status,
         ),
       );
@@ -277,5 +283,21 @@ class ChatController extends FamilyAsyncNotifier<ChatState, String> {
     final sorted = messages.toList();
     sorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
     return sorted;
+  }
+
+  Future<({List<ChatMessage> messages, bool hasOlderMessages})> _fetchMessages(
+    String orderId, {
+    String? before,
+  }) async {
+    final messages = await ref
+        .read(chatRepositoryProvider)
+        .getMessages(orderId, limit: _messagePageSize + 1, before: before);
+    final sorted = _sortMessages(messages);
+    final hasOlderMessages = sorted.length > _messagePageSize;
+    final visibleMessages = hasOlderMessages
+        ? sorted.sublist(sorted.length - _messagePageSize)
+        : sorted;
+
+    return (messages: visibleMessages, hasOlderMessages: hasOlderMessages);
   }
 }

@@ -98,7 +98,7 @@ class Order {
   };
 
   static OrderStatus _parseStatus(String value) => switch (value) {
-    'pending' => OrderStatus.pending,
+    'pending' || 'pending_payment' => OrderStatus.pending,
     'paid' => OrderStatus.paid,
     'confirmed' => OrderStatus.confirmed,
     'picked_up' => OrderStatus.pickedUp,

@@ -157,6 +157,8 @@ class _MessagesListState extends State<_MessagesList> {
       );
     }
 
+    final historyActionCount = widget.state.hasOlderMessages ? 1 : 0;
+
     return ListView.builder(
       controller: widget.scrollController,
       padding: const EdgeInsets.fromLTRB(
@@ -165,9 +167,9 @@ class _MessagesListState extends State<_MessagesList> {
         AppSpacing.xl,
         AppSpacing.lg,
       ),
-      itemCount: messages.length + 1,
+      itemCount: messages.length + historyActionCount,
       itemBuilder: (context, index) {
-        if (index == 0) {
+        if (widget.state.hasOlderMessages && index == 0) {
           return Center(
             child: TextButton(
               onPressed: widget.state.isLoadingOlder
@@ -184,7 +186,7 @@ class _MessagesListState extends State<_MessagesList> {
           );
         }
 
-        final message = messages[index - 1];
+        final message = messages[index - historyActionCount];
         return _MessageBubble(message: message);
       },
     );

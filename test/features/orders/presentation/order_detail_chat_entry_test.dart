@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:berezhok/features/orders/domain/order.dart';
 import 'package:berezhok/features/orders/presentation/pages/order_detail_page.dart';
 import 'package:berezhok/features/orders/providers/order_providers.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('ru');
+  });
+
   group('OrderDetailPage chat entry', () {
     testWidgets('shows chat button for confirmed and picked up orders', (
       tester,

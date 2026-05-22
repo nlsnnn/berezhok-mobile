@@ -20,7 +20,7 @@ class EditProfileSheet extends StatefulWidget {
   final String initialLastName;
   final String initialEmail;
   final Future<void> Function(String firstName, String lastName, String email)
-      onSave;
+  onSave;
 
   @override
   State<EditProfileSheet> createState() => _EditProfileSheetState();
@@ -59,11 +59,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     });
 
     try {
-      await widget.onSave(
-        _nameController.text.trim(),
-        '',
-        '',
-      );
+      await widget.onSave(_nameController.text.trim(), '', '');
       if (mounted) {
         Navigator.of(context).pop();
       }
@@ -98,18 +94,6 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.divider,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
           Text('Редактировать профиль', style: AppTypography.heading3),
           const SizedBox(height: AppSpacing.xxl),
 

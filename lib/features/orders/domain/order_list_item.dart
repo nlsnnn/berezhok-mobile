@@ -29,33 +29,33 @@ class OrderListItem {
       status == OrderStatus.pickedUp;
 
   String get statusKey => switch (status) {
-        OrderStatus.pickedUp => 'picked_up',
-        _ => status.name,
-      };
+    OrderStatus.pickedUp => 'picked_up',
+    _ => status.name,
+  };
 
   factory OrderListItem.fromJson(Map<String, dynamic> json) => OrderListItem(
-        id: json['id'] as String,
-        status: _parseStatus(json['status'] as String),
-        pickupCode: json['pickup_code'] as String,
-        amount: (json['amount'] as num).toDouble(),
-        boxName: json['box_name'] as String? ?? '',
-        locationName: json['location_name'] as String? ?? '',
-        pickupTimeStart: DateTime.parse(json['pickup_time_start'] as String),
-        createdAt: DateTime.parse(json['created_at'] as String),
-        hasReview: json['has_review'] as bool? ?? false,
-      );
+    id: json['id'] as String,
+    status: _parseStatus(json['status'] as String),
+    pickupCode: json['pickup_code'] as String,
+    amount: (json['amount'] as num).toDouble(),
+    boxName: json['box_name'] as String? ?? '',
+    locationName: json['location_name'] as String? ?? '',
+    pickupTimeStart: DateTime.parse(json['pickup_time_start'] as String),
+    createdAt: DateTime.parse(json['created_at'] as String),
+    hasReview: json['has_review'] as bool? ?? false,
+  );
 
   static OrderStatus _parseStatus(String value) => switch (value) {
-        'pending' => OrderStatus.pending,
-        'paid' => OrderStatus.paid,
-        'confirmed' => OrderStatus.confirmed,
-        'picked_up' => OrderStatus.pickedUp,
-        'completed' => OrderStatus.completed,
-        'cancelled' => OrderStatus.cancelled,
-        'refunded' => OrderStatus.refunded,
-        'disputed' => OrderStatus.disputed,
-        _ => OrderStatus.pending,
-      };
+    'pending' || 'pending_payment' => OrderStatus.pending,
+    'paid' => OrderStatus.paid,
+    'confirmed' => OrderStatus.confirmed,
+    'picked_up' => OrderStatus.pickedUp,
+    'completed' => OrderStatus.completed,
+    'cancelled' => OrderStatus.cancelled,
+    'refunded' => OrderStatus.refunded,
+    'disputed' => OrderStatus.disputed,
+    _ => OrderStatus.pending,
+  };
 
   @override
   String toString() => 'OrderListItem(id: $id, status: $statusKey)';

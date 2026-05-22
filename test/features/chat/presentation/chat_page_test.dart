@@ -11,6 +11,27 @@ import 'package:berezhok/features/chat/presentation/pages/chat_page.dart';
 import 'package:berezhok/features/chat/providers/chat_providers.dart';
 
 void main() {
+  testWidgets(
+    'hides load earlier action when initial history has no older page',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            chatRepositoryProvider.overrideWithValue(
+              _SingleMessageChatRepository(),
+            ),
+            chatRealtimeClientProvider.overrideWithValue(_IdleRealtimeClient()),
+          ],
+          child: const MaterialApp(home: ChatPage(orderId: 'ord_1')),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('message msg_1'), findsOneWidget);
+      expect(find.text('Загрузить раньше'), findsNothing);
+    },
+  );
+
   testWidgets('disables composer while message is sending', (tester) async {
     final realtime = _SlowRealtimeClient();
 
@@ -41,6 +62,29 @@ void main() {
   });
 }
 
+class _SingleMessageChatRepository implements ChatRepository {
+  @override
+  Future<List<ChatMessage>> getMessages(
+    String orderId, {
+    int limit = 50,
+    String? before,
+  }) async {
+    return [
+      ChatMessage(
+        id: 'msg_1',
+        orderId: orderId,
+        senderType: ChatSenderType.partner,
+        senderId: 'partner_1',
+        message: 'message msg_1',
+        createdAt: DateTime(2026, 5, 13, 23, 10),
+      ),
+    ];
+  }
+
+  @override
+  Future<void> markRead(String orderId, String messageId) async {}
+}
+
 class _EmptyChatRepository implements ChatRepository {
   @override
   Future<List<ChatMessage>> getMessages(
@@ -53,6 +97,31 @@ class _EmptyChatRepository implements ChatRepository {
 
   @override
   Future<void> markRead(String orderId, String messageId) async {}
+}
+
+class _IdleRealtimeClient implements ChatRealtimeClient {
+  @override
+  Future<ChatRealtimeConnection> connect(String orderId) async {
+    return _IdleRealtimeConnection();
+  }
+}
+
+class _IdleRealtimeConnection implements ChatRealtimeConnection {
+  final _eventsController = StreamController<ChatRealtimeEvent>.broadcast();
+
+  @override
+  Stream<ChatRealtimeEvent> get events => _eventsController.stream;
+
+  @override
+  Future<void> sendMessage(String message) async {}
+
+  @override
+  Future<void> markRead(String messageId) async {}
+
+  @override
+  Future<void> close() async {
+    await _eventsController.close();
+  }
 }
 
 class _SlowRealtimeClient implements ChatRealtimeClient {

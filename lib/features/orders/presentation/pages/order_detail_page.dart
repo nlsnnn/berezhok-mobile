@@ -552,17 +552,6 @@ class _ReviewBottomSheetState extends State<_ReviewBottomSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.divider,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-
           Text('Оставить отзыв', style: AppTypography.heading3),
           const SizedBox(height: AppSpacing.xxl),
 
@@ -626,13 +615,14 @@ class _ReviewBottomSheetState extends State<_ReviewBottomSheet> {
             isLoading: _isSubmitting,
             onPressed: _rating > 0
                 ? () async {
+                    final navigator = Navigator.of(context);
                     setState(() => _isSubmitting = true);
                     final comment = _commentController.text.trim();
                     await widget.onSubmit(
                       _rating,
                       comment.isEmpty ? null : comment,
                     );
-                    if (mounted) Navigator.pop(context);
+                    if (mounted) navigator.pop();
                   }
                 : null,
           ),
