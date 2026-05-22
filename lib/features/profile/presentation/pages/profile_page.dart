@@ -6,7 +6,6 @@ import 'package:berezhok/core/theme/app_spacing.dart';
 import 'package:berezhok/core/theme/app_typography.dart';
 import 'package:berezhok/core/widgets/app_button.dart';
 import 'package:berezhok/core/widgets/shimmer_loading.dart';
-import 'package:berezhok/core/utils/formatters.dart';
 import 'package:berezhok/features/auth/providers/auth_providers.dart';
 import 'package:berezhok/features/profile/providers/profile_providers.dart';
 import 'package:berezhok/features/profile/presentation/widgets/edit_profile_sheet.dart';
@@ -43,15 +42,15 @@ class ProfilePage extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   '$error',
-                  style: AppTypography.body2
-                      .copyWith(color: AppColors.textSecondary),
+                  style: AppTypography.body2.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.xxl),
                 AppButton(
                   label: 'Повторить',
-                  onPressed: () =>
-                      ref.read(profileProvider.notifier).refresh(),
+                  onPressed: () => ref.read(profileProvider.notifier).refresh(),
                 ),
               ],
             ),
@@ -114,10 +113,7 @@ class ProfilePage extends ConsumerWidget {
               // --- Menu ---
               Padding(
                 padding: AppSpacing.screenPadding,
-                child: Text(
-                  'НАСТРОЙКИ',
-                  style: AppTypography.label,
-                ),
+                child: Text('НАСТРОЙКИ', style: AppTypography.label),
               ),
               const SizedBox(height: AppSpacing.md),
               _MenuTile(
@@ -142,10 +138,7 @@ class ProfilePage extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xxl),
               Padding(
                 padding: AppSpacing.screenPadding,
-                child: Text(
-                  'ИНФОРМАЦИЯ',
-                  style: AppTypography.label,
-                ),
+                child: Text('ИНФОРМАЦИЯ', style: AppTypography.label),
               ),
               const SizedBox(height: AppSpacing.md),
               _MenuTile(
@@ -211,9 +204,9 @@ class ProfilePage extends ConsumerWidget {
         initialEmail: '',
         onSave: (firstName, lastName, email) async {
           // API only supports updating name field
-          await ref.read(profileProvider.notifier).updateProfile(
-                name: firstName,
-              );
+          await ref
+              .read(profileProvider.notifier)
+              .updateProfile(name: firstName);
         },
       ),
     );
@@ -236,8 +229,9 @@ class ProfilePage extends ConsumerWidget {
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text(
               'Отмена',
-              style: AppTypography.subtitle2
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTypography.subtitle2.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
           TextButton(
@@ -285,15 +279,15 @@ class ProfilePage extends ConsumerWidget {
             _AboutStep(
               number: '1',
               title: 'Найдите заведение',
-              description: 'Откройте карту или каталог и выберите '
+              description:
+                  'Откройте карту или каталог и выберите '
                   'заведение рядом с вами.',
             ),
             const SizedBox(height: AppSpacing.lg),
             _AboutStep(
               number: '2',
               title: 'Закажите сюрприз-бокс',
-              description:
-                  'Выберите бокс со скидкой до 70%. Состав — сюрприз!',
+              description: 'Выберите бокс со скидкой до 70%. Состав — сюрприз!',
             ),
             const SizedBox(height: AppSpacing.lg),
             _AboutStep(
@@ -418,8 +412,18 @@ class _ProfileHeader extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     const months = [
-      'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-      'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+      'января',
+      'февраля',
+      'марта',
+      'апреля',
+      'мая',
+      'июня',
+      'июля',
+      'августа',
+      'сентября',
+      'октября',
+      'ноября',
+      'декабря',
     ];
     return '${months[date.month - 1]} ${date.year}';
   }
@@ -471,10 +475,7 @@ class _MenuTile extends StatelessWidget {
                   children: [
                     Text(title, style: AppTypography.body1),
                     if (subtitle != null)
-                      Text(
-                        subtitle!,
-                        style: AppTypography.caption,
-                      ),
+                      Text(subtitle!, style: AppTypography.caption),
                   ],
                 ),
               ),
@@ -521,9 +522,7 @@ class _AboutStep extends StatelessWidget {
           child: Center(
             child: Text(
               number,
-              style: AppTypography.subtitle2.copyWith(
-                color: AppColors.primary,
-              ),
+              style: AppTypography.subtitle2.copyWith(color: AppColors.primary),
             ),
           ),
         ),
@@ -536,8 +535,9 @@ class _AboutStep extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 description,
-                style:
-                    AppTypography.body2.copyWith(color: AppColors.textSecondary),
+                style: AppTypography.body2.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -583,11 +583,7 @@ class _ProfileShimmer extends StatelessWidget {
                 borderRadius: AppSpacing.radiusSm,
               ),
               const SizedBox(height: AppSpacing.xxl),
-              ShimmerLoading(
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-              ),
+              ShimmerLoading(width: 80, height: 80, borderRadius: 40),
               const SizedBox(height: AppSpacing.lg),
               ShimmerLoading(
                 width: 120,
@@ -610,15 +606,24 @@ class _ProfileShimmer extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: ShimmerLoading(height: 80, borderRadius: AppSpacing.radiusMd),
+                child: ShimmerLoading(
+                  height: 80,
+                  borderRadius: AppSpacing.radiusMd,
+                ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: ShimmerLoading(height: 80, borderRadius: AppSpacing.radiusMd),
+                child: ShimmerLoading(
+                  height: 80,
+                  borderRadius: AppSpacing.radiusMd,
+                ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: ShimmerLoading(height: 80, borderRadius: AppSpacing.radiusMd),
+                child: ShimmerLoading(
+                  height: 80,
+                  borderRadius: AppSpacing.radiusMd,
+                ),
               ),
             ],
           ),

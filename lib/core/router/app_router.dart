@@ -14,6 +14,7 @@ import 'package:berezhok/features/home/presentation/pages/home_page.dart';
 import 'package:berezhok/features/map/presentation/pages/map_page.dart';
 import 'package:berezhok/features/orders/presentation/pages/orders_page.dart';
 import 'package:berezhok/features/orders/presentation/pages/order_detail_page.dart';
+import 'package:berezhok/features/chat/presentation/pages/chat_page.dart';
 import 'package:berezhok/features/profile/presentation/pages/profile_page.dart';
 import 'package:berezhok/core/services/deep_link_service.dart';
 
@@ -28,6 +29,7 @@ abstract final class AppRoutes {
   static const locationDetail = '/catalog/:id';
   static const orders = '/orders';
   static const orderDetail = '/orders/:id';
+  static const orderChat = '/orders/:id/chat';
   static const profile = '/profile';
 }
 
@@ -88,10 +90,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (_, __) => const SplashPage(),
-      ),
+      GoRoute(path: '/', builder: (_, __) => const SplashPage()),
       GoRoute(
         path: AppRoutes.onboarding,
         builder: (_, __) => const OnboardingPage(),
@@ -115,10 +114,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         branches: [
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: AppRoutes.map,
-                builder: (_, __) => const MapPage(),
-              ),
+              GoRoute(path: AppRoutes.map, builder: (_, __) => const MapPage()),
             ],
           ),
           StatefulShellBranch(
@@ -144,11 +140,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (_, __) => const OrdersPage(),
               ),
               GoRoute(
+                path: AppRoutes.orderChat,
+                builder: (_, state) {
+                  return ChatPage(orderId: state.pathParameters['id']!);
+                },
+              ),
+              GoRoute(
                 path: AppRoutes.orderDetail,
                 builder: (_, state) {
-                  return OrderDetailPage(
-                    orderId: state.pathParameters['id']!,
-                  );
+                  return OrderDetailPage(orderId: state.pathParameters['id']!);
                 },
               ),
             ],

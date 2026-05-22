@@ -43,14 +43,17 @@ class Order {
       status == OrderStatus.confirmed ||
       status == OrderStatus.pickedUp;
 
+  bool get canChat =>
+      status == OrderStatus.confirmed || status == OrderStatus.pickedUp;
+
   bool get canDispute => status == OrderStatus.pickedUp;
 
   bool get canReview => status == OrderStatus.completed && !hasReview;
 
   String get statusKey => switch (status) {
-        OrderStatus.pickedUp => 'picked_up',
-        _ => status.name,
-      };
+    OrderStatus.pickedUp => 'picked_up',
+    _ => status.name,
+  };
 
   factory Order.fromJson(Map<String, dynamic> json) {
     final pickupTime = json['pickup_time'] as Map<String, dynamic>?;
@@ -62,8 +65,9 @@ class Order {
       qrCodeUrl: json['qr_code_url'] as String?,
       amount: (json['amount'] as num).toDouble(),
       box: OrderBox.fromJson(json['box'] as Map<String, dynamic>),
-      location:
-          OrderLocation.fromJson(json['location'] as Map<String, dynamic>),
+      location: OrderLocation.fromJson(
+        json['location'] as Map<String, dynamic>,
+      ),
       pickupTimeStart: pickupTime != null
           ? DateTime.parse(pickupTime['start'] as String)
           : DateTime.parse(json['pickup_time_start'] as String),
@@ -79,32 +83,31 @@ class Order {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'status': statusKey,
-        'pickup_code': pickupCode,
-        if (qrCodeUrl != null) 'qr_code_url': qrCodeUrl,
-        'amount': amount,
-        'box': box.toJson(),
-        'location': location.toJson(),
-        'pickup_time_start': pickupTimeStart.toIso8601String(),
-        'pickup_time_end': pickupTimeEnd.toIso8601String(),
-        'created_at': createdAt.toIso8601String(),
-        if (confirmedAt != null)
-          'confirmed_at': confirmedAt!.toIso8601String(),
-        'has_review': hasReview,
-      };
+    'id': id,
+    'status': statusKey,
+    'pickup_code': pickupCode,
+    if (qrCodeUrl != null) 'qr_code_url': qrCodeUrl,
+    'amount': amount,
+    'box': box.toJson(),
+    'location': location.toJson(),
+    'pickup_time_start': pickupTimeStart.toIso8601String(),
+    'pickup_time_end': pickupTimeEnd.toIso8601String(),
+    'created_at': createdAt.toIso8601String(),
+    if (confirmedAt != null) 'confirmed_at': confirmedAt!.toIso8601String(),
+    'has_review': hasReview,
+  };
 
   static OrderStatus _parseStatus(String value) => switch (value) {
-        'pending' => OrderStatus.pending,
-        'paid' => OrderStatus.paid,
-        'confirmed' => OrderStatus.confirmed,
-        'picked_up' => OrderStatus.pickedUp,
-        'completed' => OrderStatus.completed,
-        'cancelled' => OrderStatus.cancelled,
-        'refunded' => OrderStatus.refunded,
-        'disputed' => OrderStatus.disputed,
-        _ => OrderStatus.pending,
-      };
+    'pending' => OrderStatus.pending,
+    'paid' => OrderStatus.paid,
+    'confirmed' => OrderStatus.confirmed,
+    'picked_up' => OrderStatus.pickedUp,
+    'completed' => OrderStatus.completed,
+    'cancelled' => OrderStatus.cancelled,
+    'refunded' => OrderStatus.refunded,
+    'disputed' => OrderStatus.disputed,
+    _ => OrderStatus.pending,
+  };
 
   @override
   String toString() => 'Order(id: $id, status: $statusKey)';
@@ -122,20 +125,17 @@ class OrderBox {
   final String name;
   final String? imageUrl;
 
-  const OrderBox({
-    required this.name,
-    this.imageUrl,
-  });
+  const OrderBox({required this.name, this.imageUrl});
 
   factory OrderBox.fromJson(Map<String, dynamic> json) => OrderBox(
-        name: json['name'] as String,
-        imageUrl: json['image_url'] as String?,
-      );
+    name: json['name'] as String,
+    imageUrl: json['image_url'] as String?,
+  );
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        if (imageUrl != null) 'image_url': imageUrl,
-      };
+    'name': name,
+    if (imageUrl != null) 'image_url': imageUrl,
+  };
 
   @override
   String toString() => 'OrderBox(name: $name)';
@@ -173,12 +173,12 @@ class OrderLocation {
   }
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'address': address,
-        if (phone != null) 'phone': phone,
-        'latitude': latitude,
-        'longitude': longitude,
-      };
+    'name': name,
+    'address': address,
+    if (phone != null) 'phone': phone,
+    'latitude': latitude,
+    'longitude': longitude,
+  };
 
   @override
   String toString() => 'OrderLocation(name: $name, address: $address)';

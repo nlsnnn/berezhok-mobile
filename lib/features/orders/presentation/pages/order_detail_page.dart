@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -41,9 +42,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
-        error: (error, _) => Center(
-          child: Text('Ошибка: $error', style: AppTypography.body2),
-        ),
+        error: (error, _) =>
+            Center(child: Text('Ошибка: $error', style: AppTypography.body2)),
         data: (order) => _buildContent(order),
       ),
     );
@@ -59,6 +59,17 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
         // Status badge centered
         Center(child: StatusBadge(status: order.statusKey)),
         const SizedBox(height: AppSpacing.xxl),
+
+        if (order.canChat) ...[
+          AppButton(
+            label: 'Чат с заведением',
+            icon: Icons.chat_bubble_outline,
+            variant: AppButtonVariant.outline,
+            fullWidth: true,
+            onPressed: () => context.go('/orders/${order.id}/chat'),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+        ],
 
         // Status timeline
         _StatusTimeline(order: order),
@@ -101,10 +112,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                formatPickupTime(
-                  order.pickupTimeStart,
-                  order.pickupTimeEnd,
-                ),
+                formatPickupTime(order.pickupTimeStart, order.pickupTimeEnd),
                 style: AppTypography.body2.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -146,49 +154,45 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   Widget _buildActions(Order order) {
     return switch (order.status) {
       OrderStatus.pickedUp => Column(
+        children: [
+          AppButton(
+            label: 'Подтвердить получение',
+            fullWidth: true,
+            isLoading: _isActionLoading,
+            onPressed: () => _confirmPickup(order.id),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppButton(
+            label: 'Не получил',
+            variant: AppButtonVariant.text,
+            fullWidth: true,
+            onPressed: () => _showDisputeDialog(order.id),
+          ),
+        ],
+      ),
+      OrderStatus.completed when order.canReview => AppButton(
+        label: 'Оставить отзыв',
+        variant: AppButtonVariant.outline,
+        fullWidth: true,
+        onPressed: () => _showReviewSheet(order.id),
+      ),
+      OrderStatus.disputed => Container(
+        padding: AppSpacing.cardPadding,
+        decoration: BoxDecoration(
+          color: AppColors.error.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        ),
+        child: Row(
           children: [
-            AppButton(
-              label: 'Подтвердить получение',
-              fullWidth: true,
-              isLoading: _isActionLoading,
-              onPressed: () => _confirmPickup(order.id),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            AppButton(
-              label: 'Не получил',
-              variant: AppButtonVariant.text,
-              fullWidth: true,
-              onPressed: () => _showDisputeDialog(order.id),
+            const Icon(Icons.info_outline, color: AppColors.error, size: 20),
+            const SizedBox(width: AppSpacing.md),
+            Text(
+              'Спор на рассмотрении',
+              style: AppTypography.body2.copyWith(color: AppColors.error),
             ),
           ],
         ),
-      OrderStatus.completed when order.canReview => AppButton(
-          label: 'Оставить отзыв',
-          variant: AppButtonVariant.outline,
-          fullWidth: true,
-          onPressed: () => _showReviewSheet(order.id),
-        ),
-      OrderStatus.disputed => Container(
-          padding: AppSpacing.cardPadding,
-          decoration: BoxDecoration(
-            color: AppColors.error.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          ),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.info_outline,
-                color: AppColors.error,
-                size: 20,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Text(
-                'Спор на рассмотрении',
-                style: AppTypography.body2.copyWith(color: AppColors.error),
-              ),
-            ],
-          ),
-        ),
+      ),
       _ => const SizedBox.shrink(),
     };
   }
@@ -232,10 +236,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
                   .openDispute(orderId, controller.text.trim());
               ref.invalidate(orderDetailProvider(orderId));
             },
-            child: Text(
-              'Отправить',
-              style: TextStyle(color: AppColors.error),
-            ),
+            child: Text('Отправить', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -294,14 +295,14 @@ class _StatusTimeline extends StatelessWidget {
   ];
 
   int get _currentIndex => switch (order.status) {
-        OrderStatus.paid => 0,
-        OrderStatus.confirmed => 1,
-        OrderStatus.pickedUp => 2,
-        OrderStatus.completed => 3,
-        OrderStatus.cancelled || OrderStatus.refunded => -1,
-        OrderStatus.disputed => 2,
-        _ => -1,
-      };
+    OrderStatus.paid => 0,
+    OrderStatus.confirmed => 1,
+    OrderStatus.pickedUp => 2,
+    OrderStatus.completed => 3,
+    OrderStatus.cancelled || OrderStatus.refunded => -1,
+    OrderStatus.disputed => 2,
+    _ => -1,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -342,9 +343,8 @@ class _StatusTimeline extends StatelessWidget {
 
     return switch (step.status) {
       OrderStatus.paid => _formatTimestamp(order.createdAt),
-      OrderStatus.confirmed => order.confirmedAt != null
-          ? _formatTimestamp(order.confirmedAt!)
-          : null,
+      OrderStatus.confirmed =>
+        order.confirmedAt != null ? _formatTimestamp(order.confirmedAt!) : null,
       _ => null,
     };
   }
@@ -405,11 +405,7 @@ class _TimelineStep extends StatelessWidget {
         ),
 
         // Timestamp
-        if (timestamp != null)
-          Text(
-            timestamp!,
-            style: AppTypography.caption,
-          ),
+        if (timestamp != null) Text(timestamp!, style: AppTypography.caption),
       ],
     );
   }
@@ -510,9 +506,7 @@ class _InfoSection extends StatelessWidget {
         children: [
           Text(
             title,
-            style: AppTypography.label.copyWith(
-              color: AppColors.textHint,
-            ),
+            style: AppTypography.label.copyWith(color: AppColors.textHint),
           ),
           const SizedBox(height: AppSpacing.sm),
           child,

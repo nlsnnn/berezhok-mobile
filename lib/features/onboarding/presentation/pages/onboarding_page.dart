@@ -186,7 +186,7 @@ class _OnboardingStepView extends StatelessWidget {
   }
 }
 
-class _OnboardingStep {
+class _OnboardingStep { 
   const _OnboardingStep({
     required this.title,
     required this.description,
