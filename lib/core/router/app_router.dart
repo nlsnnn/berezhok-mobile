@@ -17,6 +17,7 @@ import 'package:berezhok/features/orders/presentation/pages/order_detail_page.da
 import 'package:berezhok/features/chat/presentation/pages/chat_page.dart';
 import 'package:berezhok/features/profile/presentation/pages/profile_page.dart';
 import 'package:berezhok/core/services/deep_link_service.dart';
+import 'package:berezhok/features/notifications/providers/push_notification_providers.dart';
 
 // Route paths as constants
 abstract final class AppRoutes {
@@ -90,14 +91,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(path: '/', builder: (_, __) => const SplashPage()),
+      GoRoute(path: '/', builder: (_, _) => const SplashPage()),
       GoRoute(
         path: AppRoutes.onboarding,
-        builder: (_, __) => const OnboardingPage(),
+        builder: (_, _) => const OnboardingPage(),
       ),
       GoRoute(
         path: AppRoutes.authPhone,
-        builder: (_, __) => const PhoneInputPage(),
+        builder: (_, _) => const PhoneInputPage(),
       ),
       GoRoute(
         path: AppRoutes.authCode,
@@ -109,19 +110,19 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Shell route for bottom navigation
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) =>
+        builder: (_, _, navigationShell) =>
             HomePage(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(
             routes: [
-              GoRoute(path: AppRoutes.map, builder: (_, __) => const MapPage()),
+              GoRoute(path: AppRoutes.map, builder: (_, _) => const MapPage()),
             ],
           ),
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: AppRoutes.catalog,
-                builder: (_, __) => const CatalogPage(),
+                builder: (_, _) => const CatalogPage(),
               ),
               GoRoute(
                 path: AppRoutes.locationDetail,
@@ -137,7 +138,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.orders,
-                builder: (_, __) => const OrdersPage(),
+                builder: (_, _) => const OrdersPage(),
               ),
               GoRoute(
                 path: AppRoutes.orderChat,
@@ -157,7 +158,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.profile,
-                builder: (_, __) => const ProfilePage(),
+                builder: (_, _) => const ProfilePage(),
               ),
             ],
           ),
@@ -169,6 +170,9 @@ final routerProvider = Provider<GoRouter>((ref) {
   // Initialize deep link service with the router
   final deepLinkService = ref.read(deepLinkServiceProvider);
   deepLinkService.init(router);
+
+  final pushNotificationService = ref.read(pushNotificationServiceProvider);
+  pushNotificationService.attachRouter(router);
 
   return router;
 });
