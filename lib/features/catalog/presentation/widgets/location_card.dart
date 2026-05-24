@@ -25,31 +25,27 @@ class LocationCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Left accent border
-            Container(
-              width: 3,
-              decoration: BoxDecoration(
-                color: category.color,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(AppSpacing.radiusLg),
-                  bottomLeft: Radius.circular(AppSpacing.radiusLg),
-                ),
-              ),
-            ),
-
             // Logo or category icon square
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(AppSpacing.md),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                 child: SizedBox(
-                  width: 64,
-                  height: 64,
-                  child: location.logoUrl != null
+                  width: 78,
+                  height: 88,
+                  child: location.coverImageUrl != null
+                      ? Image.network(
+                          location.coverImageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) =>
+                              _CategoryIconFallback(category: category),
+                        )
+                      : location.logoUrl != null
                       ? Image.network(
                           location.logoUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _CategoryIconFallback(category: category),
+                          errorBuilder: (_, _, _) =>
+                              _CategoryIconFallback(category: category),
                         )
                       : _CategoryIconFallback(category: category),
                 ),
@@ -60,9 +56,9 @@ class LocationCard extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(
-                  top: AppSpacing.lg,
+                  top: AppSpacing.md,
                   right: AppSpacing.lg,
-                  bottom: AppSpacing.lg,
+                  bottom: AppSpacing.md,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +68,7 @@ class LocationCard extends StatelessWidget {
                     Text(
                       location.name,
                       style: AppTypography.subtitle1,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: AppSpacing.xs),
@@ -86,51 +82,52 @@ class LocationCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.xs),
 
-                    // Rating
-                    if (location.rating != null)
-                      RatingStars(
-                        rating: location.rating!.average,
-                        size: 14,
-                        showValue: true,
-                        totalReviews: location.rating!.totalReviews,
-                      ),
-                    const SizedBox(height: AppSpacing.xs),
-
-                    // Distance + active boxes
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.xs,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        if (location.rating != null)
+                          RatingStars(
+                            rating: location.rating!.average,
+                            size: 14,
+                            showValue: true,
+                            totalReviews: location.rating!.totalReviews,
+                          ),
+                        if (location.distance != null)
+                          _MetaPill(
+                            icon: Icons.near_me_outlined,
+                            label: formatDistance(location.distance!),
+                          ),
+                        _MetaPill(
+                          icon: Icons.inventory_2_outlined,
+                          label: _formatBoxesCount(location.activeBoxesCount),
+                          color: location.activeBoxesCount > 0
+                              ? AppColors.success
+                              : AppColors.textSecondary,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
                     Row(
                       children: [
-                        if (location.distance != null) ...[
-                          Icon(
-                            Icons.place_outlined,
-                            size: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            formatDistance(location.distance!),
-                            style: AppTypography.caption,
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Text('·', style: AppTypography.caption),
-                          const SizedBox(width: AppSpacing.sm),
-                        ],
                         Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: location.activeBoxesCount > 0
-                                ? AppColors.success
-                                : AppColors.textHint,
-                            shape: BoxShape.circle,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: 3,
                           ),
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Text(
-                          _formatBoxesCount(location.activeBoxesCount),
-                          style: AppTypography.caption.copyWith(
-                            color: location.activeBoxesCount > 0
-                                ? AppColors.success
-                                : AppColors.textSecondary,
+                          decoration: BoxDecoration(
+                            color: category.color.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusFull,
+                            ),
+                          ),
+                          child: Text(
+                            'Смотреть боксы',
+                            style: AppTypography.caption.copyWith(
+                              color: category.color,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ],
@@ -163,6 +160,36 @@ class LocationCard extends StatelessWidget {
   }
 }
 
+class _MetaPill extends StatelessWidget {
+  const _MetaPill({
+    required this.icon,
+    required this.label,
+    this.color = AppColors.textSecondary,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: color),
+        const SizedBox(width: 3),
+        Text(
+          label,
+          style: AppTypography.caption.copyWith(
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _CategoryIconFallback extends StatelessWidget {
   const _CategoryIconFallback({required this.category});
 
@@ -175,11 +202,7 @@ class _CategoryIconFallback extends StatelessWidget {
         color: category.color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
-      child: Icon(
-        category.icon,
-        color: category.color,
-        size: 30,
-      ),
+      child: Icon(category.icon, color: category.color, size: 30),
     );
   }
 }

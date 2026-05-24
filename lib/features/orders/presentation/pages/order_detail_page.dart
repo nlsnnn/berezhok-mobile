@@ -56,8 +56,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
         vertical: AppSpacing.lg,
       ),
       children: [
-        // Status badge centered
-        Center(child: StatusBadge(status: order.statusKey)),
+        _OrderHero(order: order),
         const SizedBox(height: AppSpacing.xxl),
 
         if (order.canChat) ...[
@@ -277,6 +276,65 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     }
+  }
+}
+
+class _OrderHero extends StatelessWidget {
+  const _OrderHero({required this.order});
+
+  final Order order;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: AppSpacing.cardPadding,
+      decoration: BoxDecoration(
+        color: AppColors.primaryDark,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        boxShadow: AppSpacing.cardShadow,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+            ),
+            child: const Icon(
+              Icons.receipt_long_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  order.box.name,
+                  style: AppTypography.subtitle1.copyWith(color: Colors.white),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  formatPickupTime(order.pickupTimeStart, order.pickupTimeEnd),
+                  style: AppTypography.caption.copyWith(
+                    color: Colors.white.withValues(alpha: 0.72),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          StatusBadge(status: order.statusKey, compact: true),
+        ],
+      ),
+    );
   }
 }
 

@@ -22,7 +22,13 @@ class OrdersPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Заказы', style: AppTypography.heading2),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Заказы', style: AppTypography.heading2),
+            Text('Активные и история получений', style: AppTypography.caption),
+          ],
+        ),
         centerTitle: false,
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
@@ -58,10 +64,7 @@ class OrdersPage extends ConsumerWidget {
               ),
               children: [
                 if (activeOrders.isNotEmpty) ...[
-                  _SectionHeader(
-                    title: 'Активные',
-                    count: activeOrders.length,
-                  ),
+                  _SectionHeader(title: 'Активные', count: activeOrders.length),
                   const SizedBox(height: AppSpacing.md),
                   ...activeOrders.map(
                     (order) => Padding(

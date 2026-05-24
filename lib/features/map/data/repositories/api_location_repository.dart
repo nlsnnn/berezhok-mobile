@@ -8,7 +8,7 @@ class ApiLocationRepository implements LocationRepository {
   final ApiClient _apiClient;
 
   ApiLocationRepository({required ApiClient apiClient})
-      : _apiClient = apiClient;
+    : _apiClient = apiClient;
 
   @override
   Future<List<FoodLocation>> getLocations({
@@ -26,7 +26,7 @@ class ApiLocationRepository implements LocationRepository {
         'lat': lat,
         'lng': lng,
         'radius': radius,
-        if (category != null) 'category': category,
+        ...?category == null ? null : {'category': category},
         'limit': limit,
         'offset': offset,
       },
@@ -48,7 +48,8 @@ class ApiLocationRepository implements LocationRepository {
 
     if (!response.success || response.data == null) {
       throw Exception(
-          response.error?.message ?? 'Failed to fetch location detail');
+        response.error?.message ?? 'Failed to fetch location detail',
+      );
     }
 
     return response.data!;
@@ -63,10 +64,7 @@ class ApiLocationRepository implements LocationRepository {
     final response = await _apiClient.getPaginated<Review>(
       ApiEndpoints.locationReviews(locationId),
       fromJson: Review.fromJson,
-      queryParameters: {
-        'limit': limit,
-        'offset': offset,
-      },
+      queryParameters: {'limit': limit, 'offset': offset},
     );
 
     if (!response.success) {

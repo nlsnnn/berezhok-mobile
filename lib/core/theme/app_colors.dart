@@ -1,49 +1,57 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  // Primary palette — muted forest green
-  static const Color primary = Color(0xFF3B7A57);
-  static const Color primaryLight = Color(0xFF5BA67C);
-  static const Color primaryDark = Color(0xFF2D5E43);
+  // Primary palette — urban fresh green
+  static const Color primary = Color(0xFF1F6F4A);
+  static const Color primaryLight = Color(0xFF3F9B6B);
+  static const Color primaryDark = Color(0xFF12432E);
+  static const Color primarySoft = Color(0xFFE8F5EE);
 
-  // Accent/Secondary — warm coral
-  static const Color accent = Color(0xFFE8734A);
-  static const Color accentLight = Color(0xFFF09E7A);
+  // Accent/Secondary — fresh lime and food coral
+  static const Color accent = Color(0xFFFF6F45);
+  static const Color accentLight = Color(0xFFFFA37F);
+  static const Color lime = Color(0xFFC7F36A);
+  static const Color limeSoft = Color(0xFFF1F9D7);
 
   // Background
-  static const Color background = Color(0xFFFAFAF7);
+  static const Color background = Color(0xFFFBFAF6);
   static const Color cardWhite = Color(0xFFFFFFFF);
 
   // Surface
-  static const Color surface = Color(0xFFF5F3EF);
+  static const Color surface = Color(0xFFF3F1EA);
+  static const Color surfaceElevated = Color(0xFFFFFEFA);
+  static const Color surfacePressed = Color(0xFFEAE7DF);
 
   // Text
-  static const Color textPrimary = Color(0xFF1A1A1A);
-  static const Color textSecondary = Color(0xFF6B6B6B);
-  static const Color textHint = Color(0xFFA0A0A0);
+  static const Color textPrimary = Color(0xFF16201A);
+  static const Color textSecondary = Color(0xFF657068);
+  static const Color textHint = Color(0xFF9AA29B);
 
   // Semantic
-  static const Color success = Color(0xFF4CAF50);
-  static const Color warning = Color(0xFFFF9800);
-  static const Color error = Color(0xFFE53935);
+  static const Color success = Color(0xFF2DA44E);
+  static const Color warning = Color(0xFFE59722);
+  static const Color error = Color(0xFFD92D20);
+  static const Color info = Color(0xFF247BA0);
 
   // Rating
-  static const Color ratingStar = Color(0xFFFFB800);
+  static const Color ratingStar = Color(0xFFFFB020);
 
   // Category colors (matching DB schema)
-  static const Color categoryBakery = Color(0xFFFF6B6B);
-  static const Color categoryCafe = Color(0xFF4ECDC4);
-  static const Color categoryRestaurant = Color(0xFF45B7D1);
-  static const Color categoryGrocery = Color(0xFFFFA07A);
-  static const Color categoryHotel = Color(0xFF98D8C8);
+  static const Color categoryBakery = Color(0xFFFF6F45);
+  static const Color categoryCafe = Color(0xFF159A9C);
+  static const Color categoryRestaurant = Color(0xFF247BA0);
+  static const Color categoryGrocery = Color(0xFFEF8A34);
+  static const Color categoryHotel = Color(0xFF7A6FF0);
 
   // Divider
-  static const Color divider = Color(0xFFE8E5DF);
+  static const Color divider = Color(0xFFE2DED3);
+  static const Color border = Color(0xFFDAD6CC);
 
   // Shadow
-  static final Color shadow = Colors.black.withValues(alpha: 0.06);
+  static final Color shadow = Colors.black.withValues(alpha: 0.055);
+  static final Color strongShadow = Colors.black.withValues(alpha: 0.12);
 
   // Shimmer
-  static const Color shimmerBase = Color(0xFFEDEAE4);
-  static const Color shimmerHighlight = Color(0xFFF5F3EF);
+  static const Color shimmerBase = Color(0xFFEDE9DF);
+  static const Color shimmerHighlight = Color(0xFFF8F6F0);
 }

@@ -112,14 +112,13 @@ class _MapPageState extends ConsumerState<MapPage>
               options: MapOptions(
                 initialCenter: _moscowCenter,
                 initialZoom: _initialZoom,
-                onTap: (_, __) {
+                onTap: (_, _) {
                   ref.read(selectedMapLocationProvider.notifier).state = null;
                 },
               ),
               children: [
                 TileLayer(
-                  urlTemplate:
-                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'ru.berezhok.berezhok',
                 ),
                 MarkerLayer(markers: _buildMarkers(locations)),
@@ -133,12 +132,11 @@ class _MapPageState extends ConsumerState<MapPage>
             ),
           ),
 
-          // ---------- Category chips ----------
           Positioned(
             top: MediaQuery.of(context).padding.top + 12,
             left: 0,
             right: 0,
-            child: const _CategoryFilterBar(),
+            child: const _MapTopOverlay(),
           ),
 
           // ---------- My location button ----------
@@ -153,11 +151,10 @@ class _MapPageState extends ConsumerState<MapPage>
             Positioned(
               left: AppSpacing.lg,
               right: AppSpacing.lg,
-              bottom: AppSpacing.lg,
+              bottom: AppSpacing.md,
               child: _LocationPreviewCard(
                 location: selectedLocation,
-                onTap: () =>
-                    context.go('/catalog/${selectedLocation.id}'),
+                onTap: () => context.go('/catalog/${selectedLocation.id}'),
                 onClose: () {
                   ref.read(selectedMapLocationProvider.notifier).state = null;
                 },
@@ -195,7 +192,7 @@ class _CategoryFilterBar extends ConsumerWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         itemCount: _categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (_, index) {
           final cat = _categories[index];
           final isSelected = selected == cat.code;
@@ -212,6 +209,67 @@ class _CategoryFilterBar extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class _MapTopOverlay extends StatelessWidget {
+  const _MapTopOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceElevated.withValues(alpha: 0.96),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+              border: Border.all(color: AppColors.divider),
+              boxShadow: AppSpacing.cardShadow,
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.search_rounded, color: AppColors.primary),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    'Еда рядом в Москве',
+                    style: AppTypography.subtitle2,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.limeSoft,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  ),
+                  child: Text(
+                    'сегодня',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.primaryDark,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        const _CategoryFilterBar(),
+      ],
     );
   }
 }
@@ -240,28 +298,24 @@ class _LocationPreviewCard extends StatelessWidget {
       builder: (context, offset, child) {
         return Transform.translate(
           offset: Offset(0, offset),
-          child: Opacity(
-            opacity: (1 - offset / 80).clamp(0, 1),
-            child: child,
-          ),
+          child: Opacity(opacity: (1 - offset / 80).clamp(0, 1), child: child),
         );
       },
       child: AppCard(
         onTap: onTap,
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Header row
             Row(
               children: [
-                // Category icon circle
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
                     color: location.category.color.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                   ),
                   child: Icon(
                     location.category.icon,
@@ -309,7 +363,7 @@ class _LocationPreviewCard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.lg),
 
             // Info row: rating | distance | boxes
             Row(
@@ -334,15 +388,15 @@ class _LocationPreviewCard extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.md),
                 ],
+                const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.sm,
-                    vertical: 2,
+                    vertical: 4,
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusFull),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   ),
                   child: Text(
                     '${location.activeBoxesCount} боксов',

@@ -54,17 +54,17 @@ class _CodeVerificationPageState extends ConsumerState<CodeVerificationPage>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _shakeAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0, end: -10), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: -10, end: 10), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 10, end: -8), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: -8, end: 6), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 6, end: -4), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: -4, end: 0), weight: 1),
-    ]).animate(CurvedAnimation(
-      parent: _shakeController,
-      curve: Curves.easeInOut,
-    ));
+    _shakeAnimation =
+        TweenSequence<double>([
+          TweenSequenceItem(tween: Tween(begin: 0, end: -10), weight: 1),
+          TweenSequenceItem(tween: Tween(begin: -10, end: 10), weight: 2),
+          TweenSequenceItem(tween: Tween(begin: 10, end: -8), weight: 2),
+          TweenSequenceItem(tween: Tween(begin: -8, end: 6), weight: 2),
+          TweenSequenceItem(tween: Tween(begin: 6, end: -4), weight: 2),
+          TweenSequenceItem(tween: Tween(begin: -4, end: 0), weight: 1),
+        ]).animate(
+          CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut),
+        );
   }
 
   @override
@@ -179,9 +179,9 @@ class _CodeVerificationPageState extends ConsumerState<CodeVerificationPage>
       setState(() => _errorText = null);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
       }
     }
   }
@@ -222,18 +222,18 @@ class _CodeVerificationPageState extends ConsumerState<CodeVerificationPage>
               const SizedBox(height: AppSpacing.xxxl),
 
               // Title
-              Text('Введите код', style: AppTypography.heading2),
+              Text('Код подтверждения', style: AppTypography.heading2),
               const SizedBox(height: AppSpacing.sm),
 
               // Subtitle
               Text(
-                'Код отправлен на ${widget.phone}',
+                'Отправили 6 цифр на ${widget.phone}',
                 style: AppTypography.body2.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.huge),
+              const SizedBox(height: AppSpacing.xxxl),
 
               // Code input boxes
               AnimatedBuilder(
@@ -244,67 +244,75 @@ class _CodeVerificationPageState extends ConsumerState<CodeVerificationPage>
                     child: child,
                   );
                 },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(_codeLength, (index) {
-                    return Container(
-                      width: 48,
-                      height: 56,
-                      margin: EdgeInsets.only(
-                        right: index < _codeLength - 1 ? AppSpacing.sm : 0,
-                      ),
-                      child: KeyboardListener(
-                        focusNode: FocusNode(),
-                        onKeyEvent: (event) => _onKeyEvent(index, event),
-                        child: TextField(
-                          controller: _controllers[index],
-                          focusNode: _focusNodes[index],
-                          textAlign: TextAlign.center,
-                          maxLength: 1,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          style: AppTypography.heading2,
-                          cursorColor: AppColors.primary,
-                          decoration: InputDecoration(
-                            counterText: '',
-                            filled: true,
-                            fillColor: AppColors.surface,
-                            contentPadding: EdgeInsets.zero,
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(AppSpacing.radiusMd),
-                              borderSide: BorderSide(
-                                color: _errorText != null
-                                    ? AppColors.error
-                                    : AppColors.divider,
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                    border: Border.all(color: AppColors.divider),
+                    boxShadow: AppSpacing.cardShadow,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(_codeLength, (index) {
+                      return SizedBox(
+                        width: 44,
+                        height: 54,
+                        child: KeyboardListener(
+                          focusNode: FocusNode(),
+                          onKeyEvent: (event) => _onKeyEvent(index, event),
+                          child: TextField(
+                            controller: _controllers[index],
+                            focusNode: _focusNodes[index],
+                            textAlign: TextAlign.center,
+                            maxLength: 1,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            style: AppTypography.heading2,
+                            cursorColor: AppColors.primary,
+                            decoration: InputDecoration(
+                              counterText: '',
+                              filled: true,
+                              fillColor: AppColors.background,
+                              contentPadding: EdgeInsets.zero,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.radiusMd,
+                                ),
+                                borderSide: BorderSide(
+                                  color: _errorText != null
+                                      ? AppColors.error
+                                      : AppColors.divider,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.radiusMd,
+                                ),
+                                borderSide: BorderSide(
+                                  color: _errorText != null
+                                      ? AppColors.error
+                                      : AppColors.divider,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.radiusMd,
+                                ),
+                                borderSide: const BorderSide(
+                                  color: AppColors.primary,
+                                  width: 1.4,
+                                ),
                               ),
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(AppSpacing.radiusMd),
-                              borderSide: BorderSide(
-                                color: _errorText != null
-                                    ? AppColors.error
-                                    : AppColors.divider,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(AppSpacing.radiusMd),
-                              borderSide: const BorderSide(
-                                color: AppColors.primary,
-                                width: 1.5,
-                              ),
-                            ),
+                            onChanged: (value) => _onDigitChanged(index, value),
                           ),
-                          onChanged: (value) =>
-                              _onDigitChanged(index, value),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
               ),
 
@@ -314,9 +322,7 @@ class _CodeVerificationPageState extends ConsumerState<CodeVerificationPage>
                 Center(
                   child: Text(
                     _errorText!,
-                    style: AppTypography.body2.copyWith(
-                      color: AppColors.error,
-                    ),
+                    style: AppTypography.body2.copyWith(color: AppColors.error),
                   ),
                 ),
               ],
@@ -326,9 +332,7 @@ class _CodeVerificationPageState extends ConsumerState<CodeVerificationPage>
               // Loading indicator
               if (_isVerifying)
                 const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ),
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 ),
 
               const SizedBox(height: AppSpacing.xxl),

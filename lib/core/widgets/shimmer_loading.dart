@@ -142,7 +142,7 @@ class ShimmerList extends StatelessWidget {
     return ListView.separated(
       itemCount: itemCount,
       itemBuilder: (context, index) => ShimmerCard(imageHeight: imageHeight),
-      separatorBuilder: (_, __) => SizedBox(height: spacing),
+      separatorBuilder: (_, _) => SizedBox(height: spacing),
     );
   }
 }

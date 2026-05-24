@@ -28,53 +28,53 @@ class SurpriseBoxCard extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-          // Top row: name + discount badge
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  box.name,
-                  style: AppTypography.subtitle1,
-                  maxLines: 1,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      box.name,
+                      style: AppTypography.heading3,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.lime,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusFull,
+                      ),
+                    ),
+                    child: Text(
+                      '-${box.discountPercent}%',
+                      style: AppTypography.subtitle2.copyWith(
+                        color: AppColors.primaryDark,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              if (box.description != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  box.description!,
+                  style: AppTypography.body2.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.success,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                ),
-                child: Text(
-                  '-${box.discountPercent}%',
-                  style: AppTypography.subtitle2.copyWith(
-                    color: Colors.white,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ],
-          ),
+              ],
 
-          // Description
-          if (box.description != null) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              box.description!,
-              style: AppTypography.body2.copyWith(
-                color: AppColors.textSecondary,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-
-          const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.lg),
 
               // Price row + pickup time
               if (isCompact)
@@ -135,7 +135,7 @@ class SurpriseBoxCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Осталось: ${box.quantityAvailable}',
+                      _remainingText,
                       style: AppTypography.caption.copyWith(
                         color: box.quantityAvailable <= 2
                             ? AppColors.warning
@@ -149,7 +149,9 @@ class SurpriseBoxCard extends StatelessWidget {
                         label: 'Забронировать',
                         size: AppButtonSize.small,
                         isLoading: isLoading,
-                        onPressed: box.quantityAvailable > 0 && !isLoading ? onBook : null,
+                        onPressed: box.quantityAvailable > 0 && !isLoading
+                            ? onBook
+                            : null,
                       ),
                     ),
                   ],
@@ -158,7 +160,7 @@ class SurpriseBoxCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'Осталось: ${box.quantityAvailable}',
+                      _remainingText,
                       style: AppTypography.caption.copyWith(
                         color: box.quantityAvailable <= 2
                             ? AppColors.warning
@@ -170,7 +172,9 @@ class SurpriseBoxCard extends StatelessWidget {
                       label: 'Забронировать',
                       size: AppButtonSize.small,
                       isLoading: isLoading,
-                      onPressed: box.quantityAvailable > 0 && !isLoading ? onBook : null,
+                      onPressed: box.quantityAvailable > 0 && !isLoading
+                          ? onBook
+                          : null,
                     ),
                   ],
                 ),
@@ -179,5 +183,14 @@ class SurpriseBoxCard extends StatelessWidget {
         },
       ),
     );
+  }
+
+  String get _remainingText {
+    final word = switch (box.quantityAvailable) {
+      1 => 'последний бокс',
+      2 || 3 || 4 => 'осталось ${box.quantityAvailable} бокса',
+      _ => 'осталось ${box.quantityAvailable} боксов',
+    };
+    return word;
   }
 }

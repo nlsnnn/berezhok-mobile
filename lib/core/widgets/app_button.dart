@@ -36,57 +36,61 @@ class _AppButtonState extends State<AppButton> {
   bool _isPressed = false;
 
   double get _height => switch (widget.size) {
-        AppButtonSize.small => 36.0,
-        AppButtonSize.medium => 48.0,
-        AppButtonSize.large => 56.0,
-      };
+    AppButtonSize.small => 36.0,
+    AppButtonSize.medium => 48.0,
+    AppButtonSize.large => 56.0,
+  };
 
   double get _borderRadius => switch (widget.size) {
-        AppButtonSize.large => AppSpacing.radiusLg,
-        _ => AppSpacing.radiusMd,
-      };
+    AppButtonSize.large => AppSpacing.radiusFull,
+    _ => AppSpacing.radiusMd,
+  };
 
   double get _fontSize => switch (widget.size) {
-        AppButtonSize.small => 13.0,
-        AppButtonSize.medium => 16.0,
-        AppButtonSize.large => 17.0,
-      };
+    AppButtonSize.small => 13.0,
+    AppButtonSize.medium => 16.0,
+    AppButtonSize.large => 17.0,
+  };
 
   double get _iconSize => switch (widget.size) {
-        AppButtonSize.small => 16.0,
-        AppButtonSize.medium => 20.0,
-        AppButtonSize.large => 22.0,
-      };
+    AppButtonSize.small => 16.0,
+    AppButtonSize.medium => 20.0,
+    AppButtonSize.large => 22.0,
+  };
 
   EdgeInsets get _padding => switch (widget.size) {
-        AppButtonSize.small =>
-          const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        AppButtonSize.medium =>
-          const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        AppButtonSize.large =>
-          const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-      };
+    AppButtonSize.small => const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 6,
+    ),
+    AppButtonSize.medium => const EdgeInsets.symmetric(
+      horizontal: 20,
+      vertical: 10,
+    ),
+    AppButtonSize.large => const EdgeInsets.symmetric(
+      horizontal: 28,
+      vertical: 14,
+    ),
+  };
 
   Color get _backgroundColor => switch (widget.variant) {
-        AppButtonVariant.primary => AppColors.primary,
-        AppButtonVariant.secondary => AppColors.accent,
-        AppButtonVariant.outline => Colors.transparent,
-        AppButtonVariant.text => Colors.transparent,
-      };
+    AppButtonVariant.primary => AppColors.primary,
+    AppButtonVariant.secondary => AppColors.accent,
+    AppButtonVariant.outline => Colors.transparent,
+    AppButtonVariant.text => Colors.transparent,
+  };
 
   Color get _foregroundColor => switch (widget.variant) {
-        AppButtonVariant.primary => Colors.white,
-        AppButtonVariant.secondary => Colors.white,
-        AppButtonVariant.outline => AppColors.primary,
-        AppButtonVariant.text => AppColors.primary,
-      };
+    AppButtonVariant.primary => Colors.white,
+    AppButtonVariant.secondary => Colors.white,
+    AppButtonVariant.outline => AppColors.primary,
+    AppButtonVariant.text => AppColors.primary,
+  };
 
   Color get _disabledBackground => switch (widget.variant) {
-        AppButtonVariant.primary ||
-        AppButtonVariant.secondary =>
-          AppColors.divider,
-        AppButtonVariant.outline || AppButtonVariant.text => Colors.transparent,
-      };
+    AppButtonVariant.primary || AppButtonVariant.secondary => AppColors.divider,
+    AppButtonVariant.outline || AppButtonVariant.text => Colors.transparent,
+  };
 
   Color get _disabledForeground => AppColors.textHint;
 
@@ -109,10 +113,7 @@ class _AppButtonState extends State<AppButton> {
               SizedBox(
                 width: _iconSize,
                 height: _iconSize,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: fg,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2, color: fg),
               ),
               const SizedBox(width: AppSpacing.sm),
             ] else if (widget.icon != null) ...[
@@ -134,10 +135,7 @@ class _AppButtonState extends State<AppButton> {
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(_borderRadius),
       side: widget.variant == AppButtonVariant.outline
-          ? BorderSide(
-              color: _isEnabled ? AppColors.primary : AppColors.divider,
-              width: 1.5,
-            )
+          ? BorderSide(color: _isEnabled ? AppColors.primary : AppColors.border)
           : BorderSide.none,
     );
 
@@ -150,6 +148,10 @@ class _AppButtonState extends State<AppButton> {
         child: Material(
           color: bg,
           shape: shape,
+          elevation: _isEnabled && widget.variant == AppButtonVariant.primary
+              ? 2
+              : 0,
+          shadowColor: AppColors.primary.withValues(alpha: 0.24),
           child: _isEnabled
               ? InkWell(
                   onTap: widget.onPressed,
@@ -162,10 +164,7 @@ class _AppButtonState extends State<AppButton> {
                   child: buttonContent,
                 )
               : IgnorePointer(
-                  child: InkWell(
-                    customBorder: shape,
-                    child: buttonContent,
-                  ),
+                  child: InkWell(customBorder: shape, child: buttonContent),
                 ),
         ),
       ),

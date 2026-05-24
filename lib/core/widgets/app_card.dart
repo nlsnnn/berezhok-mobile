@@ -9,6 +9,9 @@ class AppCard extends StatelessWidget {
     this.onTap,
     this.padding,
     this.borderRadius,
+    this.backgroundColor,
+    this.showBorder = true,
+    this.showShadow = true,
     super.key,
   });
 
@@ -16,6 +19,9 @@ class AppCard extends StatelessWidget {
   final VoidCallback? onTap;
   final EdgeInsetsGeometry? padding;
   final double? borderRadius;
+  final Color? backgroundColor;
+  final bool showBorder;
+  final bool showShadow;
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +33,11 @@ class AppCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: AppSpacing.cardShadow,
+        border: showBorder ? Border.all(color: AppColors.divider) : null,
+        boxShadow: showShadow ? AppSpacing.cardShadow : null,
       ),
       child: Material(
-        color: AppColors.cardWhite,
+        color: backgroundColor ?? AppColors.surfaceElevated,
         shape: shape,
         clipBehavior: Clip.antiAlias,
         child: InkWell(

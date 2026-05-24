@@ -40,7 +40,7 @@ class ApiOrderRepository implements OrderRepository {
       ApiEndpoints.orders,
       fromJson: OrderListItem.fromJson,
       queryParameters: {
-        if (status != null) 'status': status,
+        ...?status == null ? null : {'status': status},
         'limit': limit,
         'offset': offset,
       },
@@ -62,7 +62,8 @@ class ApiOrderRepository implements OrderRepository {
 
     if (!response.success || response.data == null) {
       throw Exception(
-          response.error?.message ?? 'Failed to fetch order detail');
+        response.error?.message ?? 'Failed to fetch order detail',
+      );
     }
 
     return response.data!;
@@ -101,7 +102,7 @@ class ApiOrderRepository implements OrderRepository {
       data: {
         'order_id': orderId,
         'rating': rating,
-        if (comment != null) 'comment': comment,
+        ...?comment == null ? null : {'comment': comment},
       },
     );
 

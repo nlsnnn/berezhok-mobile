@@ -70,7 +70,7 @@ class ProfilePage extends ConsumerWidget {
                 memberSince: profile.createdAt,
               ),
 
-              const SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.lg),
 
               // --- Stats ---
               // TODO: Stats need to be calculated from orders list or added to API
@@ -321,18 +321,8 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [AppColors.primary, AppColors.primaryLight],
-        ),
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(AppSpacing.radiusXl),
-        ),
-      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -340,59 +330,79 @@ class _ProfileHeader extends StatelessWidget {
             AppSpacing.xl,
             AppSpacing.lg,
             AppSpacing.xl,
-            AppSpacing.xxxl,
+            AppSpacing.lg,
           ),
-          child: Column(
-            children: [
-              Text(
-                'Профиль',
-                style: AppTypography.heading2.copyWith(color: Colors.white),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              // Avatar circle
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    width: 2,
-                  ),
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            decoration: BoxDecoration(
+              color: AppColors.primaryDark,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+              boxShadow: AppSpacing.cardShadow,
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Профиль',
+                  style: AppTypography.heading2.copyWith(color: Colors.white),
                 ),
-                child: Center(
-                  child: Text(
-                    initials,
-                    style: AppTypography.heading1.copyWith(
-                      color: Colors.white,
-                      fontSize: 28,
+                const SizedBox(height: AppSpacing.xl),
+                Container(
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.26),
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      initials,
+                      style: AppTypography.heading1.copyWith(
+                        color: Colors.white,
+                        fontSize: 28,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Text(
-                displayName,
-                style: AppTypography.heading3.copyWith(color: Colors.white),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                phone,
-                style: AppTypography.body2.copyWith(
-                  color: Colors.white.withValues(alpha: 0.8),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  displayName,
+                  style: AppTypography.heading3.copyWith(color: Colors.white),
                 ),
-              ),
-              if (memberSince != null) ...[
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'С нами с ${_formatDate(memberSince!)}',
-                  style: AppTypography.caption.copyWith(
-                    color: Colors.white.withValues(alpha: 0.6),
+                  phone,
+                  style: AppTypography.body2.copyWith(
+                    color: Colors.white.withValues(alpha: 0.78),
                   ),
                 ),
+                if (memberSince != null) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusFull,
+                      ),
+                    ),
+                    child: Text(
+                      'С нами с ${_formatDate(memberSince!)}',
+                      style: AppTypography.caption.copyWith(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

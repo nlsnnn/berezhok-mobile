@@ -14,10 +14,11 @@ abstract final class AppSpacing {
   static const double huge = 48;
 
   // Border radius
+  static const double radiusXs = 6;
   static const double radiusSm = 8;
-  static const double radiusMd = 12;
-  static const double radiusLg = 16;
-  static const double radiusXl = 24;
+  static const double radiusMd = 10;
+  static const double radiusLg = 14;
+  static const double radiusXl = 22;
   static const double radiusFull = 100;
 
   // Common paddings
@@ -28,13 +29,21 @@ abstract final class AppSpacing {
   static final List<BoxShadow> cardShadow = [
     BoxShadow(
       color: AppColors.shadow,
-      blurRadius: 12,
-      offset: const Offset(0, 4),
+      blurRadius: 18,
+      offset: const Offset(0, 8),
     ),
     BoxShadow(
-      color: AppColors.shadow,
-      blurRadius: 4,
+      color: Colors.black.withValues(alpha: 0.025),
+      blurRadius: 2,
       offset: const Offset(0, 1),
+    ),
+  ];
+
+  static final List<BoxShadow> sheetShadow = [
+    BoxShadow(
+      color: AppColors.strongShadow,
+      blurRadius: 28,
+      offset: const Offset(0, 14),
     ),
   ];
 }

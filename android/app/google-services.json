@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "655705675114",
+    "project_id": "berezhok-mobile",
+    "storage_bucket": "berezhok-mobile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:655705675114:android:365b51133f562c22014113",
+        "android_client_info": {
+          "package_name": "ru.berezhok.berezhok"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcHO5XpEgHkxk9ZcAU3nkiHl09y5vrXuk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

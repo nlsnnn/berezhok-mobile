@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -55,13 +54,15 @@ class _PhoneInputPageState extends ConsumerState<PhoneInputPage> {
       await notifier.sendCode(_fullPhone);
 
       if (mounted) {
-        context.push('${AppRoutes.authCode}?phone=${Uri.encodeComponent(_fullPhone)}');
+        context.push(
+          '${AppRoutes.authCode}?phone=${Uri.encodeComponent(_fullPhone)}',
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
       }
     } finally {
       if (mounted) {
@@ -79,32 +80,32 @@ class _PhoneInputPageState extends ConsumerState<PhoneInputPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Spacer(flex: 2),
+              const SizedBox(height: AppSpacing.xl),
 
-              // App name
-              Text('Бережок', style: AppTypography.heading1),
-              const SizedBox(height: AppSpacing.sm),
+              const _AuthHero(),
 
-              // Subtitle
+              const Spacer(),
+
+              // Phone input
               Text(
-                'Спасай еду, экономь деньги',
-                style: AppTypography.body1.copyWith(
+                'Войти или зарегистрироваться',
+                style: AppTypography.heading2,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Укажи номер, чтобы видеть боксы рядом и забирать заказы.',
+                style: AppTypography.body2.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
-
-              const SizedBox(height: AppSpacing.huge),
-
-              // Phone input
+              const SizedBox(height: AppSpacing.xxl),
               AppTextField(
                 label: 'Номер телефона',
                 hint: '(900) 123-45-67',
                 controller: _phoneController,
                 focusNode: _phoneFocusNode,
                 keyboardType: TextInputType.phone,
-                inputFormatters: [
-                  _phoneMask,
-                ],
+                inputFormatters: [_phoneMask],
                 prefix: Text(
                   '+7',
                   style: AppTypography.body1.copyWith(
@@ -132,6 +133,89 @@ class _PhoneInputPageState extends ConsumerState<PhoneInputPage> {
               const SizedBox(height: AppSpacing.xxl),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AuthHero extends StatelessWidget {
+  const _AuthHero();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: BoxDecoration(
+        color: AppColors.primaryDark,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        boxShadow: AppSpacing.cardShadow,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Бережок',
+                  style: AppTypography.heading1.copyWith(color: Colors.white),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Свежая еда рядом со скидкой до 70%',
+                  style: AppTypography.body1.copyWith(
+                    color: Colors.white.withValues(alpha: 0.78),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: const [
+                    _HeroBadge(text: 'Карта рядом'),
+                    _HeroBadge(text: 'Быстрый заказ'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Image.asset(
+            'assets/images/mascot/bag.png',
+            width: 92,
+            height: 92,
+            fit: BoxFit.contain,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroBadge extends StatelessWidget {
+  const _HeroBadge({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+      ),
+      child: Text(
+        text,
+        style: AppTypography.caption.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

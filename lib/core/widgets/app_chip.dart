@@ -23,36 +23,55 @@ class AppChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeColor = color ?? AppColors.primary;
-    final bg = isSelected ? activeColor : Colors.transparent;
+    final bg = isSelected ? activeColor : AppColors.surfaceElevated;
     final fg = isSelected ? Colors.white : AppColors.textPrimary;
-    final borderColor = isSelected ? activeColor : AppColors.divider;
+    final borderColor = isSelected ? activeColor : AppColors.border;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: bg,
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          border: Border.all(color: borderColor, width: 1.5),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 16, color: fg),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-            Text(
-              label,
-              style: AppTypography.subtitle2.copyWith(
-                color: fg,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              ),
+          splashColor: activeColor.withValues(alpha: 0.08),
+          highlightColor: activeColor.withValues(alpha: 0.04),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+              border: Border.all(color: borderColor),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: activeColor.withValues(alpha: 0.18),
+                        blurRadius: 14,
+                        offset: const Offset(0, 6),
+                      ),
+                    ]
+                  : null,
             ),
-          ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 16, color: fg),
+                  const SizedBox(width: AppSpacing.xs),
+                ],
+                Text(
+                  label,
+                  style: AppTypography.subtitle2.copyWith(
+                    color: fg,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

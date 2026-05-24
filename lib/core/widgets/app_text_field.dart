@@ -76,7 +76,9 @@ class AppTextField extends StatelessWidget {
             hintStyle: AppTypography.body1.copyWith(color: AppColors.textHint),
             counterText: '',
             filled: true,
-            fillColor: enabled ? AppColors.surface : AppColors.divider,
+            fillColor: enabled
+                ? AppColors.surfaceElevated
+                : AppColors.surfacePressed,
             prefixIcon: prefix != null
                 ? Padding(
                     padding: const EdgeInsets.only(
@@ -103,13 +105,13 @@ class AppTextField extends StatelessWidget {
                 : null,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md + 2,
+              vertical: AppSpacing.lg,
             ),
-            border: _buildBorder(AppColors.divider),
-            enabledBorder: _buildBorder(AppColors.divider),
-            focusedBorder: _buildBorder(AppColors.primary, width: 1.5),
+            border: _buildBorder(AppColors.border),
+            enabledBorder: _buildBorder(AppColors.border),
+            focusedBorder: _buildBorder(AppColors.primary, width: 1.4),
             errorBorder: _buildBorder(AppColors.error),
-            focusedErrorBorder: _buildBorder(AppColors.error, width: 1.5),
+            focusedErrorBorder: _buildBorder(AppColors.error, width: 1.4),
             disabledBorder: _buildBorder(AppColors.divider),
           ),
         ),

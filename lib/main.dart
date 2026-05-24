@@ -7,10 +7,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:berezhok/app.dart';
 import 'package:berezhok/features/notifications/providers/push_notification_providers.dart';
+import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   debugPrint('Background push notification received: ${message.data}');
 }
 
@@ -23,7 +26,9 @@ void main() async {
   var firebaseMessagingInitialized = false;
   if (dotenv.get('ENABLE_PUSH_NOTIFICATIONS', fallback: 'false') == 'true') {
     try {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       FirebaseMessaging.onBackgroundMessage(
         _firebaseMessagingBackgroundHandler,
       );

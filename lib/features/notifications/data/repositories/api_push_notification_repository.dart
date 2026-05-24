@@ -14,7 +14,7 @@ class ApiPushNotificationRepository implements PushNotificationRepository {
     required String platform,
   }) async {
     final response = await _apiClient.post<Map<String, dynamic>>(
-      ApiEndpoints.registerPushToken,
+      "http://localhost:8091/customer/push-tokens",
       fromJson: (json) => json,
       data: {'token': token, 'platform': platform},
     );

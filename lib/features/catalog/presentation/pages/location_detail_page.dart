@@ -10,6 +10,7 @@ import 'package:berezhok/core/theme/app_typography.dart';
 import 'package:berezhok/core/utils/formatters.dart';
 import 'package:berezhok/core/widgets/widgets.dart';
 import 'package:berezhok/features/catalog/domain/location.dart';
+import 'package:berezhok/features/catalog/domain/surprise_box.dart';
 import 'package:berezhok/features/catalog/presentation/widgets/review_card.dart';
 import 'package:berezhok/features/catalog/presentation/widgets/surprise_box_card.dart';
 import 'package:berezhok/features/map/providers/map_providers.dart';
@@ -25,6 +26,8 @@ const _dayLabels = <String, String>{
   'sat': 'Сб',
   'sun': 'Вс',
 };
+
+const _orderedDayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
 /// Map of short day codes to [DateTime.weekday] values.
 const _dayToWeekday = <String, int>{
@@ -43,8 +46,7 @@ class LocationDetailPage extends ConsumerStatefulWidget {
   final String locationId;
 
   @override
-  ConsumerState<LocationDetailPage> createState() =>
-      _LocationDetailPageState();
+  ConsumerState<LocationDetailPage> createState() => _LocationDetailPageState();
 }
 
 class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
@@ -60,6 +62,18 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      bottomNavigationBar: detailAsync.maybeWhen(
+        data: (location) => location.activeBoxes.isEmpty
+            ? null
+            : _StickyBookingBar(
+                box: location.activeBoxes.first,
+                isLoading: _bookingBoxId != null,
+                onBook: _bookingBoxId == null
+                    ? () => _bookBox(location.activeBoxes.first.id)
+                    : null,
+              ),
+        orElse: () => null,
+      ),
       body: detailAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
@@ -87,10 +101,9 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.xl),
 
-                      // Name
-                      Text(location.name, style: AppTypography.heading2),
+                      Text(location.name, style: AppTypography.heading1),
                       const SizedBox(height: AppSpacing.sm),
 
                       // Category chip + address
@@ -102,10 +115,12 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
                               vertical: AppSpacing.xs,
                             ),
                             decoration: BoxDecoration(
-                              color:
-                                  location.category.color.withValues(alpha: 0.12),
-                              borderRadius:
-                                  BorderRadius.circular(AppSpacing.radiusSm),
+                              color: location.category.color.withValues(
+                                alpha: 0.12,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.radiusSm,
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -163,7 +178,34 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
                       const SizedBox(height: AppSpacing.xxl),
 
                       // Surprise boxes section
-                      Text('Доступные боксы', style: AppTypography.heading3),
+                      Row(
+                        children: [
+                          Text(
+                            'Доступные боксы',
+                            style: AppTypography.heading3,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primarySoft,
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.radiusFull,
+                              ),
+                            ),
+                            child: Text(
+                              '${boxes.length}',
+                              style: AppTypography.caption.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: AppSpacing.md),
 
                       if (boxes.isEmpty)
@@ -179,17 +221,20 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
                           ),
                         )
                       else
-                        ...boxes.map((box) => Padding(
-                              padding:
-                                  const EdgeInsets.only(bottom: AppSpacing.md),
-                              child: SurpriseBoxCard(
-                                box: box,
-                                isLoading: _bookingBoxId != null,
-                                onBook: _bookingBoxId == null
-                                    ? () => _bookBox(box.id)
-                                    : null,
-                              ),
-                            )),
+                        ...boxes.map(
+                          (box) => Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: AppSpacing.md,
+                            ),
+                            child: SurpriseBoxCard(
+                              box: box,
+                              isLoading: _bookingBoxId != null,
+                              onBook: _bookingBoxId == null
+                                  ? () => _bookBox(box.id)
+                                  : null,
+                            ),
+                          ),
+                        ),
 
                       const SizedBox(height: AppSpacing.xxl),
 
@@ -200,7 +245,7 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
                             color: AppColors.primary,
                           ),
                         ),
-                        error: (_, __) => Text(
+                        error: (_, _) => Text(
                           'Не удалось загрузить отзывы',
                           style: AppTypography.body2.copyWith(
                             color: AppColors.textSecondary,
@@ -211,10 +256,7 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
                           children: [
                             Row(
                               children: [
-                                Text(
-                                  'Отзывы',
-                                  style: AppTypography.heading3,
-                                ),
+                                Text('Отзывы', style: AppTypography.heading3),
                                 const SizedBox(width: AppSpacing.sm),
                                 if (location.rating != null)
                                   Text(
@@ -238,21 +280,23 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
                                 ),
                               )
                             else
-                              ...reviews.map((review) => Column(
-                                    children: [
-                                      ReviewCard(review: review),
-                                      const Divider(
-                                        color: AppColors.divider,
-                                        height: 1,
-                                      ),
-                                    ],
-                                  )),
+                              ...reviews.map(
+                                (review) => Column(
+                                  children: [
+                                    ReviewCard(review: review),
+                                    const Divider(
+                                      color: AppColors.divider,
+                                      height: 1,
+                                    ),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
                       ),
 
                       // Bottom spacing
-                      const SizedBox(height: AppSpacing.huge),
+                      const SizedBox(height: AppSpacing.huge * 2),
                     ],
                   ),
                 ),
@@ -313,10 +357,7 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
     } on ApiException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(e.message), behavior: SnackBarBehavior.floating),
       );
     } catch (_) {
       if (!mounted) return;
@@ -343,7 +384,7 @@ class _CoverSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 220,
+      expandedHeight: 260,
       pinned: true,
       backgroundColor: location.category.color,
       leading: Padding(
@@ -365,7 +406,8 @@ class _CoverSection extends StatelessWidget {
               Image.network(
                 location.coverImageUrl!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _GradientFallback(location: location),
+                errorBuilder: (_, _, _) =>
+                    _GradientFallback(location: location),
               )
             else
               _GradientFallback(location: location),
@@ -393,7 +435,7 @@ class _CoverSection extends StatelessWidget {
             // Category badge at bottom
             Positioned(
               left: AppSpacing.xl,
-              bottom: AppSpacing.lg,
+              bottom: AppSpacing.xl,
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.md,
@@ -424,6 +466,69 @@ class _CoverSection extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _StickyBookingBar extends StatelessWidget {
+  const _StickyBookingBar({
+    required this.box,
+    required this.isLoading,
+    required this.onBook,
+  });
+
+  final SurpriseBox box;
+  final bool isLoading;
+  final VoidCallback? onBook;
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.md,
+        AppSpacing.xl,
+        bottomPadding + AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        border: const Border(top: BorderSide(color: AppColors.divider)),
+        boxShadow: AppSpacing.sheetShadow,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'от ${formatPrice(box.discountPrice)}',
+                  style: AppTypography.heading3.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  box.pickupTimeFormatted,
+                  style: AppTypography.caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          AppButton(
+            label: 'Забронировать',
+            size: AppButtonSize.medium,
+            isLoading: isLoading,
+            onPressed: onBook,
+          ),
+        ],
       ),
     );
   }
@@ -563,7 +668,8 @@ class _WorkingHoursSectionState extends State<_WorkingHoursSection> {
   @override
   Widget build(BuildContext context) {
     final todayKey = _todayKey();
-    final todayHours = widget.workingHours[todayKey] ?? 'Выходной';
+    final todayHours = _formatHours(widget.workingHours[todayKey]);
+    final orderedEntries = _orderedWorkingHours();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -578,15 +684,19 @@ class _WorkingHoursSectionState extends State<_WorkingHoursSection> {
                 color: AppColors.textSecondary,
               ),
               const SizedBox(width: AppSpacing.sm),
-              Text(
-                'Сегодня: $todayHours',
-                style: AppTypography.body2,
+              Expanded(
+                child: Text(
+                  'Сегодня: $todayHours',
+                  style: AppTypography.body2.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const Spacer(),
+              const SizedBox(width: AppSpacing.sm),
               Icon(
-                _expanded
-                    ? Icons.keyboard_arrow_up
-                    : Icons.keyboard_arrow_down,
+                _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                 size: 20,
                 color: AppColors.textSecondary,
               ),
@@ -595,55 +705,94 @@ class _WorkingHoursSectionState extends State<_WorkingHoursSection> {
         ),
         if (_expanded) ...[
           const SizedBox(height: AppSpacing.sm),
-          ...widget.workingHours.entries.map((entry) {
-            final label = _dayLabels[entry.key] ?? entry.key;
-            final isToday = entry.key == todayKey;
-            return Padding(
-              padding: const EdgeInsets.only(
-                left: 26,
-                bottom: AppSpacing.xs,
-              ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 24,
-                    child: Text(
-                      label,
-                      style: AppTypography.caption.copyWith(
-                        fontWeight:
-                            isToday ? FontWeight.w600 : FontWeight.w400,
-                        color: isToday
-                            ? AppColors.textPrimary
-                            : AppColors.textSecondary,
-                      ),
+          Container(
+            margin: const EdgeInsets.only(left: 26),
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceElevated,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              border: Border.all(color: AppColors.divider),
+            ),
+            child: Column(
+              children: [
+                for (final entry in orderedEntries)
+                  Padding(
+                    padding: EdgeInsets.only(
+                      bottom: entry.key == orderedEntries.last.key
+                          ? 0
+                          : AppSpacing.sm,
+                    ),
+                    child: _WorkingHoursRow(
+                      label: _dayLabels[entry.key] ?? entry.key,
+                      hours: entry.value,
+                      isToday: entry.key == todayKey,
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    entry.value,
-                    style: AppTypography.caption.copyWith(
-                      fontWeight:
-                          isToday ? FontWeight.w600 : FontWeight.w400,
-                      color: isToday
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
+              ],
+            ),
+          ),
         ],
       ],
     );
   }
 
+  List<MapEntry<String, String>> _orderedWorkingHours() {
+    return [
+      for (final key in _orderedDayKeys)
+        MapEntry(key, _formatHours(widget.workingHours[key])),
+    ];
+  }
+
+  String _formatHours(String? value) {
+    final trimmed = value?.trim();
+    if (trimmed == null || trimmed.isEmpty) return 'Выходной';
+    return trimmed.replaceAll('-', '–');
+  }
+
   String _todayKey() {
     final weekday = DateTime.now().weekday;
     return _dayToWeekday.entries
-        .firstWhere((e) => e.value == weekday,
-            orElse: () => const MapEntry('mon', 1))
+        .firstWhere(
+          (e) => e.value == weekday,
+          orElse: () => const MapEntry('mon', 1),
+        )
         .key;
+  }
+}
+
+class _WorkingHoursRow extends StatelessWidget {
+  const _WorkingHoursRow({
+    required this.label,
+    required this.hours,
+    required this.isToday,
+  });
+
+  final String label;
+  final String hours;
+  final bool isToday;
+
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = AppTypography.caption.copyWith(
+      fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
+      color: isToday ? AppColors.textPrimary : AppColors.textSecondary,
+    );
+
+    return Row(
+      children: [
+        SizedBox(width: 28, child: Text(label, style: textStyle)),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Text(
+            hours,
+            style: textStyle,
+            textAlign: TextAlign.right,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -657,18 +806,17 @@ class _PhoneRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        final uri = Uri(scheme: 'tel', path: phone.replaceAll(RegExp(r'[^\d+]'), ''));
+        final uri = Uri(
+          scheme: 'tel',
+          path: phone.replaceAll(RegExp(r'[^\d+]'), ''),
+        );
         if (await canLaunchUrl(uri)) {
           await launchUrl(uri);
         }
       },
       child: Row(
         children: [
-          const Icon(
-            Icons.phone_outlined,
-            size: 18,
-            color: AppColors.primary,
-          ),
+          const Icon(Icons.phone_outlined, size: 18, color: AppColors.primary),
           const SizedBox(width: AppSpacing.sm),
           Text(
             formatPhone(phone),

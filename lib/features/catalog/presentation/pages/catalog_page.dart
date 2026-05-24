@@ -13,6 +13,7 @@ enum SortBy { distance, rating }
 
 /// Provider for the current sort mode.
 final sortByProvider = StateProvider<SortBy>((ref) => SortBy.distance);
+final catalogSearchQueryProvider = StateProvider<String>((ref) => '');
 
 class CatalogPage extends ConsumerWidget {
   const CatalogPage({super.key});
@@ -22,6 +23,7 @@ class CatalogPage extends ConsumerWidget {
     final locationsAsync = ref.watch(locationsProvider);
     final selectedCategory = ref.watch(selectedCategoryProvider);
     final sortBy = ref.watch(sortByProvider);
+    final searchQuery = ref.watch(catalogSearchQueryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -29,34 +31,72 @@ class CatalogPage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.xl,
                 AppSpacing.lg,
                 AppSpacing.xl,
-                AppSpacing.sm,
+                AppSpacing.md,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Каталог', style: AppTypography.heading2),
-                  const SizedBox(height: AppSpacing.xs),
                   Row(
                     children: [
-                      Icon(
-                        Icons.place_outlined,
-                        size: 16,
-                        color: AppColors.textSecondary,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Каталог', style: AppTypography.heading2),
+                            const SizedBox(height: AppSpacing.xs),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.near_me_rounded,
+                                  size: 16,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                Text(
+                                  'Москва · боксы рядом',
+                                  style: AppTypography.body2.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        'Москва',
-                        style: AppTypography.body2.copyWith(
-                          color: AppColors.textSecondary,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.limeSoft,
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusFull,
+                          ),
+                        ),
+                        child: Text(
+                          'до -70%',
+                          style: AppTypography.subtitle2.copyWith(
+                            color: AppColors.primaryDark,
+                          ),
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  TextField(
+                    onChanged: (value) =>
+                        ref.read(catalogSearchQueryProvider.notifier).state =
+                            value,
+                    decoration: InputDecoration(
+                      hintText: 'Найти кафе, пекарню или адрес',
+                      prefixIcon: const Icon(Icons.search_rounded),
+                    ),
                   ),
                 ],
               ),
@@ -67,17 +107,15 @@ class CatalogPage extends ConsumerWidget {
               height: 48,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xl,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                 children: [
                   _CategoryChip(
                     label: 'Все',
                     code: null,
                     selectedCode: selectedCategory,
-                    onTap: () => ref
-                        .read(selectedCategoryProvider.notifier)
-                        .state = null,
+                    onTap: () =>
+                        ref.read(selectedCategoryProvider.notifier).state =
+                            null,
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   _CategoryChip(
@@ -85,9 +123,9 @@ class CatalogPage extends ConsumerWidget {
                     code: 'bakery',
                     icon: Icons.bakery_dining,
                     selectedCode: selectedCategory,
-                    onTap: () => ref
-                        .read(selectedCategoryProvider.notifier)
-                        .state = 'bakery',
+                    onTap: () =>
+                        ref.read(selectedCategoryProvider.notifier).state =
+                            'bakery',
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   _CategoryChip(
@@ -95,9 +133,9 @@ class CatalogPage extends ConsumerWidget {
                     code: 'cafe',
                     icon: Icons.coffee,
                     selectedCode: selectedCategory,
-                    onTap: () => ref
-                        .read(selectedCategoryProvider.notifier)
-                        .state = 'cafe',
+                    onTap: () =>
+                        ref.read(selectedCategoryProvider.notifier).state =
+                            'cafe',
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   _CategoryChip(
@@ -105,9 +143,9 @@ class CatalogPage extends ConsumerWidget {
                     code: 'restaurant',
                     icon: Icons.restaurant,
                     selectedCode: selectedCategory,
-                    onTap: () => ref
-                        .read(selectedCategoryProvider.notifier)
-                        .state = 'restaurant',
+                    onTap: () =>
+                        ref.read(selectedCategoryProvider.notifier).state =
+                            'restaurant',
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   _CategoryChip(
@@ -115,9 +153,9 @@ class CatalogPage extends ConsumerWidget {
                     code: 'grocery',
                     icon: Icons.shopping_basket,
                     selectedCode: selectedCategory,
-                    onTap: () => ref
-                        .read(selectedCategoryProvider.notifier)
-                        .state = 'grocery',
+                    onTap: () =>
+                        ref.read(selectedCategoryProvider.notifier).state =
+                            'grocery',
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   _CategoryChip(
@@ -125,9 +163,9 @@ class CatalogPage extends ConsumerWidget {
                     code: 'hotel',
                     icon: Icons.hotel,
                     selectedCode: selectedCategory,
-                    onTap: () => ref
-                        .read(selectedCategoryProvider.notifier)
-                        .state = 'hotel',
+                    onTap: () =>
+                        ref.read(selectedCategoryProvider.notifier).state =
+                            'hotel',
                   ),
                 ],
               ),
@@ -143,9 +181,8 @@ class CatalogPage extends ConsumerWidget {
                   _SortOption(
                     label: 'По расстоянию',
                     isSelected: sortBy == SortBy.distance,
-                    onTap: () =>
-                        ref.read(sortByProvider.notifier).state =
-                            SortBy.distance,
+                    onTap: () => ref.read(sortByProvider.notifier).state =
+                        SortBy.distance,
                   ),
                   const SizedBox(width: AppSpacing.md),
                   _SortOption(
@@ -184,15 +221,38 @@ class CatalogPage extends ConsumerWidget {
                     );
                   }
 
-                  // Apply sort
-                  final sorted = List.of(locations);
+                  final normalizedQuery = searchQuery.trim().toLowerCase();
+                  final filtered = normalizedQuery.isEmpty
+                      ? locations
+                      : locations.where((location) {
+                          final haystack =
+                              '${location.name} ${location.address} ${location.category.name}'
+                                  .toLowerCase();
+                          return haystack.contains(normalizedQuery);
+                        }).toList();
+
+                  if (filtered.isEmpty) {
+                    return const EmptyState(
+                      icon: Icons.search_off_rounded,
+                      title: 'Ничего не найдено',
+                      subtitle: 'Попробуйте другой запрос или категорию',
+                    );
+                  }
+
+                  final sorted = List.of(filtered);
                   switch (sortBy) {
                     case SortBy.distance:
-                      sorted.sort((a, b) => (a.distance ?? double.infinity)
-                          .compareTo(b.distance ?? double.infinity));
+                      sorted.sort(
+                        (a, b) => (a.distance ?? double.infinity).compareTo(
+                          b.distance ?? double.infinity,
+                        ),
+                      );
                     case SortBy.rating:
-                      sorted.sort((a, b) =>
-                          (b.rating?.average ?? 0).compareTo(a.rating?.average ?? 0));
+                      sorted.sort(
+                        (a, b) => (b.rating?.average ?? 0).compareTo(
+                          a.rating?.average ?? 0,
+                        ),
+                      );
                   }
 
                   return RefreshIndicator(
@@ -206,8 +266,7 @@ class CatalogPage extends ConsumerWidget {
                       ),
                       itemCount: sorted.length,
                       itemBuilder: (context, index) => Padding(
-                        padding:
-                            const EdgeInsets.only(bottom: AppSpacing.md),
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
                         child: LocationCard(location: sorted[index]),
                       ),
                     ),
