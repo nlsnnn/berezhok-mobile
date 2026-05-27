@@ -556,10 +556,13 @@ class MockInterceptor extends Interceptor {
       orElse: () => orders.first,
     );
 
+    final isPending = order['status'] == 'pending_payment';
     return {
       ...order,
-      'pickup_code': '7842',
-      'qr_code_url': 'https://api.berezhok.ru/v1/orders/$id/qr',
+      'amount': order['price'],
+      if (!isPending) 'pickup_code': '7842',
+      if (!isPending) 'qr_code_url': 'https://api.berezhok.ru/v1/orders/$id/qr',
+      if (isPending) 'payment_url': 'https://pay.berezhok.ru/checkout/mock-$id',
       'location': {
         'id': 'loc-a1000001-bbbb-4ccc-dddd-eeeeeeee0001',
         'name': order['location_name'],
@@ -577,11 +580,12 @@ class MockInterceptor extends Interceptor {
         'image_url':
             'https://images.berezhok.ru/boxes/evening-surprise.jpg',
       },
-      'payment': {
-        'method': 'card',
-        'status': 'paid',
-        'paid_at': order['created_at'],
-      },
+      if (!isPending)
+        'payment': {
+          'method': 'card',
+          'status': 'paid',
+          'paid_at': order['created_at'],
+        },
     };
   }
 }

@@ -106,6 +106,7 @@ class MockOrderRepository implements OrderRepository {
         status: status,
         pickupCode: order.pickupCode,
         qrCodeUrl: order.qrCodeUrl,
+        paymentUrl: order.paymentUrl,
         amount: order.amount,
         box: order.box,
         location: order.location,
@@ -121,6 +122,7 @@ class MockOrderRepository implements OrderRepository {
         status: order.status,
         pickupCode: order.pickupCode,
         qrCodeUrl: order.qrCodeUrl,
+        paymentUrl: order.paymentUrl,
         amount: order.amount,
         box: order.box,
         location: order.location,
@@ -140,6 +142,24 @@ final _tomorrow = _today.add(const Duration(days: 1));
 final _yesterday = _today.subtract(const Duration(days: 1));
 
 final List<Order> _initialOrders = [
+  Order(
+    id: 'ord_0',
+    status: OrderStatus.pending,
+    pickupCode: '',
+    paymentUrl: 'https://pay.berezhok.local/mock/ord_0',
+    amount: 349,
+    box: const OrderBox(name: 'Вечерний сюрприз'),
+    location: const OrderLocation(
+      name: 'Кофейня Дабл Би',
+      address: 'Москва, ул. Мясницкая, 24/7с1',
+      phone: '+74959876543',
+      latitude: 55.7628,
+      longitude: 37.6365,
+    ),
+    pickupTimeStart: _today.add(const Duration(hours: 19)),
+    pickupTimeEnd: _today.add(const Duration(hours: 21)),
+    createdAt: _now.subtract(const Duration(minutes: 5)),
+  ),
   Order(
     id: 'ord_1',
     status: OrderStatus.confirmed,

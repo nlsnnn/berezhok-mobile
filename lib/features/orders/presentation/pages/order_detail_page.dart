@@ -154,6 +154,37 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   Widget _buildActions(Order order, Set<String> reviewedIds) {
     final canReview = order.canReview && !reviewedIds.contains(order.id);
     return switch (order.status) {
+      OrderStatus.pending => Column(
+        children: [
+          if (order.paymentUrl != null)
+            AppButton(
+              label: 'Перейти к оплате',
+              icon: Icons.payment_outlined,
+              fullWidth: true,
+              onPressed: () => _openPaymentUrl(order.paymentUrl!),
+            ),
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            padding: AppSpacing.cardPadding,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    'После оплаты заказ будет подтверждён',
+                    style: AppTypography.body2.copyWith(color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
       OrderStatus.pickedUp => Column(
         children: [
           AppButton(
@@ -274,6 +305,13 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
         },
       ),
     );
+  }
+
+  Future<void> _openPaymentUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   Future<void> _openMaps(OrderLocation location) async {

@@ -14,6 +14,7 @@ class Order {
   final OrderStatus status;
   final String pickupCode;
   final String? qrCodeUrl;
+  final String? paymentUrl;
   final double amount;
   final OrderBox box;
   final OrderLocation location;
@@ -28,6 +29,7 @@ class Order {
     required this.status,
     required this.pickupCode,
     this.qrCodeUrl,
+    this.paymentUrl,
     required this.amount,
     required this.box,
     required this.location,
@@ -39,6 +41,7 @@ class Order {
   });
 
   bool get isActive =>
+      status == OrderStatus.pending ||
       status == OrderStatus.paid ||
       status == OrderStatus.confirmed ||
       status == OrderStatus.pickedUp;
@@ -61,9 +64,10 @@ class Order {
     return Order(
       id: json['id'] as String,
       status: _parseStatus(json['status'] as String),
-      pickupCode: json['pickup_code'] as String,
+      pickupCode: json['pickup_code'] as String? ?? '',
       qrCodeUrl: json['qr_code_url'] as String?,
-      amount: (json['amount'] as num).toDouble(),
+      paymentUrl: json['payment_url'] as String?,
+      amount: ((json['amount'] ?? json['price'] ?? 0) as num).toDouble(),
       box: OrderBox.fromJson(json['box'] as Map<String, dynamic>),
       location: OrderLocation.fromJson(
         json['location'] as Map<String, dynamic>,

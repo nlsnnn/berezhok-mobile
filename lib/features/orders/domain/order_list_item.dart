@@ -24,6 +24,7 @@ class OrderListItem {
   });
 
   bool get isActive =>
+      status == OrderStatus.pending ||
       status == OrderStatus.paid ||
       status == OrderStatus.confirmed ||
       status == OrderStatus.pickedUp;
