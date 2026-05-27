@@ -1,6 +1,20 @@
 import 'location_category.dart';
 import 'surprise_box.dart';
 
+class LocationPin {
+  final String code;
+  final String nameRu;
+
+  const LocationPin({required this.code, required this.nameRu});
+
+  factory LocationPin.fromJson(Map<String, dynamic> json) => LocationPin(
+        code: json['code'] as String,
+        nameRu: json['name_ru'] as String,
+      );
+
+  Map<String, dynamic> toJson() => {'code': code, 'name_ru': nameRu};
+}
+
 class FoodLocation {
   final String id;
   final String name;
@@ -17,6 +31,7 @@ class FoodLocation {
   final String? phone;
   final int activeBoxesCount;
   final List<SurpriseBox> activeBoxes;
+  final List<LocationPin> pins;
 
   const FoodLocation({
     required this.id,
@@ -34,6 +49,7 @@ class FoodLocation {
     this.phone,
     this.activeBoxesCount = 0,
     this.activeBoxes = const [],
+    this.pins = const [],
   });
 
   factory FoodLocation.fromJson(Map<String, dynamic> json) {
@@ -74,6 +90,10 @@ class FoodLocation {
                   SurpriseBox.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      pins: (json['pins'] as List<dynamic>?)
+              ?.map((e) => LocationPin.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
   }
 
@@ -92,6 +112,7 @@ class FoodLocation {
         if (workingHours != null) 'working_hours': workingHours,
         if (phone != null) 'phone': phone,
         'active_boxes_count': activeBoxesCount,
+        if (pins.isNotEmpty) 'pins': pins.map((p) => p.toJson()).toList(),
       };
 
   @override

@@ -92,6 +92,7 @@ class MockAuthRepository implements AuthRepository {
   }
 
   /// Update user name in local storage.
+  @override
   Future<User?> updateUserName(String name) async {
     final currentUser = await getCurrentUser();
     if (currentUser == null) return null;

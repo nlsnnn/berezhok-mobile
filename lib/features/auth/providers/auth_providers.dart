@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:berezhok/core/api/api_providers.dart';
 import 'package:berezhok/features/auth/data/repositories/auth_repository.dart';
-import 'package:berezhok/features/auth/data/repositories/mock_auth_repository.dart';
 import 'package:berezhok/features/auth/data/repositories/api_auth_repository.dart';
+import 'package:berezhok/features/auth/data/repositories/mock_auth_repository.dart';
 import 'package:berezhok/features/auth/domain/user.dart';
 import 'package:berezhok/features/notifications/providers/push_notification_providers.dart';
 
@@ -61,11 +61,9 @@ class AuthNotifier extends AsyncNotifier<User?> {
 
   Future<void> updateName(String name) async {
     final repo = ref.read(authRepositoryProvider);
-    if (repo is MockAuthRepository) {
-      final updated = await repo.updateUserName(name);
-      if (updated != null) {
-        state = AsyncData(updated);
-      }
+    final updated = await repo.updateUserName(name);
+    if (updated != null) {
+      state = AsyncData(updated);
     }
   }
 }

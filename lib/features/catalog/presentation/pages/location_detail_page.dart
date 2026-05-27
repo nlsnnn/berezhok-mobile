@@ -155,6 +155,11 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
                         ],
                       ),
 
+                      if (location.pins.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        _PinsRow(pins: location.pins),
+                      ],
+
                       const SizedBox(height: AppSpacing.lg),
 
                       // Rating row
@@ -792,6 +797,42 @@ class _WorkingHoursRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _PinsRow extends StatelessWidget {
+  const _PinsRow({required this.pins});
+
+  final List<LocationPin> pins;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.xs,
+      children: pins
+          .map(
+            (pin) => Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Text(
+                pin.nameRu,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 }

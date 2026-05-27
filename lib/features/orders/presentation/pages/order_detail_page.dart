@@ -29,6 +29,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   @override
   Widget build(BuildContext context) {
     final orderAsync = ref.watch(orderDetailProvider(widget.orderId));
+    final reviewedIds = ref.watch(reviewedOrderIdsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -44,12 +45,12 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
         ),
         error: (error, _) =>
             Center(child: Text('Ошибка: $error', style: AppTypography.body2)),
-        data: (order) => _buildContent(order),
+        data: (order) => _buildContent(order, reviewedIds),
       ),
     );
   }
 
-  Widget _buildContent(Order order) {
+  Widget _buildContent(Order order, Set<String> reviewedIds) {
     return ListView(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.xl,
@@ -144,13 +145,14 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
         const SizedBox(height: AppSpacing.xxl),
 
         // Action buttons
-        _buildActions(order),
+        _buildActions(order, reviewedIds),
         const SizedBox(height: AppSpacing.xxxl),
       ],
     );
   }
 
-  Widget _buildActions(Order order) {
+  Widget _buildActions(Order order, Set<String> reviewedIds) {
+    final canReview = order.canReview && !reviewedIds.contains(order.id);
     return switch (order.status) {
       OrderStatus.pickedUp => Column(
         children: [
@@ -169,7 +171,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
           ),
         ],
       ),
-      OrderStatus.completed when order.canReview => AppButton(
+      OrderStatus.completed when canReview => AppButton(
         label: 'Оставить отзыв',
         variant: AppButtonVariant.outline,
         fullWidth: true,
@@ -253,10 +255,22 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
       ),
       builder: (ctx) => _ReviewBottomSheet(
         onSubmit: (rating, comment) async {
-          await ref
-              .read(ordersProvider.notifier)
-              .createReview(orderId, rating, comment);
-          ref.invalidate(orderDetailProvider(orderId));
+          try {
+            await ref
+                .read(ordersProvider.notifier)
+                .createReview(orderId, rating, comment);
+            ref.invalidate(orderDetailProvider(orderId));
+          } catch (e) {
+            // Бэк вернул «review already exists» — значит отзыв уже есть,
+            // помечаем локально, чтобы кнопка исчезла.
+            if (_isReviewConflict(e)) {
+              ref
+                  .read(reviewedOrderIdsProvider.notifier)
+                  .update((ids) => {...ids, orderId});
+              ref.invalidate(orderDetailProvider(orderId));
+            }
+            rethrow;
+          }
         },
       ),
     );
@@ -574,6 +588,13 @@ class _InfoSection extends StatelessWidget {
   }
 }
 
+/// Возвращает true, если ошибка означает, что отзыв уже существует
+/// (бэк вернул {"code":"Conflict","message":"review already exists"}).
+bool _isReviewConflict(Object e) {
+  final msg = e.toString().toLowerCase();
+  return msg.contains('review already exists') || msg.contains('conflict');
+}
+
 // --- Review Bottom Sheet ---
 
 class _ReviewBottomSheet extends StatefulWidget {
@@ -674,13 +695,34 @@ class _ReviewBottomSheetState extends State<_ReviewBottomSheet> {
             onPressed: _rating > 0
                 ? () async {
                     final navigator = Navigator.of(context);
+                    final messenger = ScaffoldMessenger.of(context);
                     setState(() => _isSubmitting = true);
                     final comment = _commentController.text.trim();
-                    await widget.onSubmit(
-                      _rating,
-                      comment.isEmpty ? null : comment,
-                    );
-                    if (mounted) navigator.pop();
+                    try {
+                      await widget.onSubmit(
+                        _rating,
+                        comment.isEmpty ? null : comment,
+                      );
+                      if (mounted) navigator.pop();
+                    } catch (e) {
+                      if (!mounted) return;
+                      final isConflict = _isReviewConflict(e);
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isConflict
+                                ? 'Вы уже оставляли отзыв на этот заказ'
+                                : 'Не удалось отправить отзыв. Попробуйте ещё раз.',
+                          ),
+                        ),
+                      );
+                      if (isConflict) {
+                        // Закрываем шторку: отзыв уже существует, повторять смысла нет.
+                        navigator.pop();
+                      } else {
+                        setState(() => _isSubmitting = false);
+                      }
+                    }
                   }
                 : null,
           ),

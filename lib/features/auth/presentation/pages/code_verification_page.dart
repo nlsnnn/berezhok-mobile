@@ -195,8 +195,10 @@ class _CodeVerificationPageState extends ConsumerState<CodeVerificationPage>
   @override
   Widget build(BuildContext context) {
     ref.listen(authStateProvider, (prev, next) {
-      if (next.valueOrNull != null && mounted) {
-        context.go(AppRoutes.map);
+      final user = next.valueOrNull;
+      if (user != null && mounted) {
+        final needsSetup = user.name.trim().isEmpty;
+        context.go(needsSetup ? AppRoutes.authSetup : AppRoutes.map);
       }
     });
 

@@ -45,4 +45,9 @@ abstract final class ApiEndpoints {
   // Push tokens
   // ---------------------------------------------------------------------------
   static const String registerPushToken = '/customer/push-tokens';
+
+  // ---------------------------------------------------------------------------
+  // Eco-account
+  // ---------------------------------------------------------------------------
+  static const String ecoStats = '/customer/eco-stats';
 }

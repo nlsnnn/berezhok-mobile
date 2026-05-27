@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:berezhok/core/router/stub_pages.dart';
-import 'package:berezhok/features/auth/presentation/pages/phone_input_page.dart';
 import 'package:berezhok/features/auth/presentation/pages/code_verification_page.dart';
+import 'package:berezhok/features/auth/presentation/pages/phone_input_page.dart';
+import 'package:berezhok/features/auth/presentation/pages/profile_setup_page.dart';
 import 'package:berezhok/features/auth/providers/auth_providers.dart';
 import 'package:berezhok/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:berezhok/features/onboarding/providers/onboarding_providers.dart';
@@ -25,6 +26,7 @@ abstract final class AppRoutes {
   static const onboarding = '/onboarding';
   static const authPhone = '/auth/phone';
   static const authCode = '/auth/code';
+  static const authSetup = '/auth/setup';
   static const map = '/map';
   static const catalog = '/catalog';
   static const locationDetail = '/catalog/:id';
@@ -60,12 +62,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isOnboardingResolved =
           onboardingState.hasValue || onboardingState.hasError;
 
-      final isLoggedIn = authState.valueOrNull != null;
+      final user = authState.valueOrNull;
+      final isLoggedIn = user != null;
+      final needsProfileSetup = isLoggedIn && user.name.trim().isEmpty;
       final isOnboardingCompleted = onboardingState.valueOrNull ?? false;
 
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
       final isSplash = state.matchedLocation == '/';
       final isOnboardingRoute = state.matchedLocation == AppRoutes.onboarding;
+      final isAuthSetupRoute = state.matchedLocation == AppRoutes.authSetup;
 
       if (!isAuthResolved || !isOnboardingResolved) {
         return isSplash ? null : AppRoutes.splash;
@@ -76,17 +81,26 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (isOnboardingCompleted && isOnboardingRoute) {
-        return isLoggedIn ? AppRoutes.map : AppRoutes.authPhone;
+        if (!isLoggedIn) return AppRoutes.authPhone;
+        return needsProfileSetup ? AppRoutes.authSetup : AppRoutes.map;
       }
 
       if (isSplash) {
-        return isLoggedIn ? AppRoutes.map : AppRoutes.authPhone;
+        if (!isLoggedIn) return AppRoutes.authPhone;
+        return needsProfileSetup ? AppRoutes.authSetup : AppRoutes.map;
       }
 
       if (!isLoggedIn && !isAuthRoute && !isOnboardingRoute) {
         return AppRoutes.authPhone;
       }
-      if (isLoggedIn && isAuthRoute) return AppRoutes.map;
+
+      if (needsProfileSetup && !isAuthSetupRoute) {
+        return AppRoutes.authSetup;
+      }
+
+      if (isLoggedIn && !needsProfileSetup && isAuthRoute) {
+        return AppRoutes.map;
+      }
 
       return null;
     },
@@ -106,6 +120,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final phone = state.uri.queryParameters['phone'] ?? '';
           return CodeVerificationPage(phone: phone);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.authSetup,
+        builder: (_, _) => const ProfileSetupPage(),
       ),
 
       // Shell route for bottom navigation

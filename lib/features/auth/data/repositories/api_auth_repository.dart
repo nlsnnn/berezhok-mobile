@@ -46,14 +46,35 @@ class ApiAuthRepository implements AuthRepository {
     }
 
     final token = response.data!.token;
-    final user = response.data!.user.copyWith(phone: phone);
+    var user = response.data!.user.copyWith(phone: phone);
 
-    // Save token and user data locally
+    // Token must be saved before the profile call so the interceptor picks it up.
     await saveToken(token);
+
+    // Best-effort: fetch profile to learn whether the user has already set their
+    // name. Returning users skip the post-login setup screen this way.
+    final fetchedName = await _tryFetchProfileName();
+    if (fetchedName != null && fetchedName.isNotEmpty) {
+      user = user.copyWith(name: fetchedName);
+    }
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userKey, jsonEncode(user.toJson()));
 
     return user;
+  }
+
+  Future<String?> _tryFetchProfileName() async {
+    try {
+      final response = await _apiClient.get<Map<String, dynamic>>(
+        ApiEndpoints.profile,
+        fromJson: (json) => json,
+      );
+      if (!response.success || response.data == null) return null;
+      return response.data!['name'] as String?;
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
@@ -71,6 +92,27 @@ class ApiAuthRepository implements AuthRepository {
     } catch (_) {
       return null;
     }
+  }
+
+  @override
+  Future<User?> updateUserName(String name) async {
+    final response = await _apiClient.patch<Map<String, dynamic>>(
+      ApiEndpoints.updateProfile,
+      fromJson: (json) => json,
+      data: {'name': name},
+    );
+
+    if (!response.success) {
+      throw Exception(response.error?.message ?? 'Failed to update name');
+    }
+
+    final current = await getCurrentUser();
+    if (current == null) return null;
+
+    final updated = current.copyWith(name: name);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userKey, jsonEncode(updated.toJson()));
+    return updated;
   }
 
   @override

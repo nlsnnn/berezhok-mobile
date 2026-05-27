@@ -53,6 +53,11 @@ class OrdersNotifier extends AsyncNotifier<List<OrderListItem>> {
   ) async {
     final repo = ref.read(orderRepositoryProvider);
     await repo.createReview(orderId, rating, comment);
+    // Сразу помечаем заказ как проверенный локально, чтобы кнопка
+    // «Оставить отзыв» исчезла независимо от ответа API.
+    ref
+        .read(reviewedOrderIdsProvider.notifier)
+        .update((ids) => {...ids, orderId});
     await refresh();
   }
 
@@ -69,6 +74,11 @@ final orderDetailProvider =
   final repo = ref.read(orderRepositoryProvider);
   return repo.getOrderDetail(orderId);
 });
+
+/// Локальный трекер заказов, для которых отзыв уже был успешно отправлен.
+/// Используется как защита на случай, если API не возвращает `has_review: true`
+/// сразу после создания отзыва.
+final reviewedOrderIdsProvider = StateProvider<Set<String>>((ref) => const {});
 
 final activeOrdersProvider = Provider<List<OrderListItem>>((ref) {
   final orders = ref.watch(ordersProvider).valueOrNull ?? [];

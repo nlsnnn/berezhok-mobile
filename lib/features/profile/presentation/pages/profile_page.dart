@@ -9,7 +9,7 @@ import 'package:berezhok/core/widgets/shimmer_loading.dart';
 import 'package:berezhok/features/auth/providers/auth_providers.dart';
 import 'package:berezhok/features/profile/providers/profile_providers.dart';
 import 'package:berezhok/features/profile/presentation/widgets/edit_profile_sheet.dart';
-import 'package:berezhok/features/profile/presentation/widgets/stat_card.dart';
+import 'package:berezhok/features/profile/presentation/widgets/eco_stats_sheet.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -56,138 +56,139 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
         ),
-        data: (profile) => RefreshIndicator(
-          color: AppColors.primary,
-          onRefresh: () => ref.read(profileProvider.notifier).refresh(),
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              // --- Header ---
-              _ProfileHeader(
-                initials: profile.initials,
-                displayName: profile.displayName,
-                phone: profile.phone,
-                memberSince: profile.createdAt,
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // --- Stats ---
-              // TODO: Stats need to be calculated from orders list or added to API
-              Padding(
-                padding: AppSpacing.screenPadding,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: StatCard(
-                        icon: Icons.shopping_bag_outlined,
-                        value: '—',
-                        label: 'Заказов',
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: StatCard(
-                        icon: Icons.star_outline_rounded,
-                        value: '—',
-                        label: 'Отзывов',
-                        color: AppColors.ratingStar,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: StatCard(
-                        icon: Icons.savings_outlined,
-                        value: '—',
-                        label: 'Сэкономлено',
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  ],
+        data: (profile) {
+          final ecoStatsAsync = ref.watch(ecoStatsProvider);
+          return RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: () async {
+              await Future.wait([
+                ref.read(profileProvider.notifier).refresh(),
+                ref.read(ecoStatsProvider.notifier).refresh(),
+              ]);
+            },
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                // --- Header ---
+                _ProfileHeader(
+                  initials: profile.initials,
+                  displayName: profile.displayName,
+                  phone: profile.phone,
+                  memberSince: profile.createdAt,
                 ),
-              ),
 
-              const SizedBox(height: AppSpacing.xxxl),
+                const SizedBox(height: AppSpacing.xxxl),
 
-              // --- Menu ---
-              Padding(
-                padding: AppSpacing.screenPadding,
-                child: Text('НАСТРОЙКИ', style: AppTypography.label),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _MenuTile(
-                icon: Icons.person_outline_rounded,
-                title: 'Редактировать профиль',
-                subtitle: profile.displayName,
-                onTap: () => _showEditSheet(context, ref),
-              ),
-              _MenuTile(
-                icon: Icons.notifications_none_rounded,
-                title: 'Уведомления',
-                subtitle: 'Включены',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Скоро будет доступно'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              Padding(
-                padding: AppSpacing.screenPadding,
-                child: Text('ИНФОРМАЦИЯ', style: AppTypography.label),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _MenuTile(
-                icon: Icons.help_outline_rounded,
-                title: 'Как это работает',
-                onTap: () {
-                  _showAboutSheet(context);
-                },
-              ),
-              _MenuTile(
-                icon: Icons.description_outlined,
-                title: 'Политика конфиденциальности',
-                onTap: () {},
-              ),
-              _MenuTile(
-                icon: Icons.info_outline_rounded,
-                title: 'О приложении',
-                subtitle: 'Бережок v1.0.0',
-                onTap: () {
-                  showAboutDialog(
-                    context: context,
-                    applicationName: 'Бережок',
-                    applicationVersion: '1.0.0',
-                    applicationLegalese:
-                        'Спасаем еду от утилизации\n\n© 2025 Бережок',
-                  );
-                },
-              ),
-
-              const SizedBox(height: AppSpacing.xxxl),
-
-              // --- Logout ---
-              Padding(
-                padding: AppSpacing.screenPadding,
-                child: AppButton(
-                  label: 'Выйти из аккаунта',
-                  variant: AppButtonVariant.outline,
-                  fullWidth: true,
-                  icon: Icons.logout_rounded,
-                  onPressed: () => _confirmLogout(context, ref),
+                // --- Menu ---
+                Padding(
+                  padding: AppSpacing.screenPadding,
+                  child: Text('НАСТРОЙКИ', style: AppTypography.label),
                 ),
-              ),
+                const SizedBox(height: AppSpacing.md),
+                _MenuTile(
+                  icon: Icons.eco_outlined,
+                  title: 'Мой Эко-счёт',
+                  subtitle: ecoStatsAsync.maybeWhen(
+                    data: (eco) =>
+                        '${eco.totalKg.round()} кг спасено · ${eco.tier.displayName}',
+                    orElse: () => null,
+                  ),
+                  onTap: () => _showEcoStats(context, ecoStatsAsync, profile.displayName),
+                ),
+                _MenuTile(
+                  icon: Icons.person_outline_rounded,
+                  title: 'Редактировать профиль',
+                  subtitle: profile.displayName,
+                  onTap: () => _showEditSheet(context, ref),
+                ),
+                _MenuTile(
+                  icon: Icons.notifications_none_rounded,
+                  title: 'Уведомления',
+                  subtitle: 'Включены',
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Скоро будет доступно'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: AppSpacing.xxl),
+                Padding(
+                  padding: AppSpacing.screenPadding,
+                  child: Text('ИНФОРМАЦИЯ', style: AppTypography.label),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _MenuTile(
+                  icon: Icons.help_outline_rounded,
+                  title: 'Как это работает',
+                  onTap: () => _showAboutSheet(context),
+                ),
+                _MenuTile(
+                  icon: Icons.description_outlined,
+                  title: 'Политика конфиденциальности',
+                  onTap: () {},
+                ),
+                _MenuTile(
+                  icon: Icons.info_outline_rounded,
+                  title: 'О приложении',
+                  subtitle: 'Бережок v1.0.0',
+                  onTap: () {
+                    showAboutDialog(
+                      context: context,
+                      applicationName: 'Бережок',
+                      applicationVersion: '1.0.0',
+                      applicationLegalese:
+                          'Спасаем еду от утилизации\n\n© 2025 Бережок',
+                    );
+                  },
+                ),
 
-              const SizedBox(height: AppSpacing.huge),
-            ],
-          ),
+                const SizedBox(height: AppSpacing.xxxl),
+
+                // --- Logout ---
+                Padding(
+                  padding: AppSpacing.screenPadding,
+                  child: AppButton(
+                    label: 'Выйти из аккаунта',
+                    variant: AppButtonVariant.outline,
+                    fullWidth: true,
+                    icon: Icons.logout_rounded,
+                    onPressed: () => _confirmLogout(context, ref),
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.huge),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showEcoStats(
+    BuildContext context,
+    AsyncValue ecoStatsAsync,
+    String displayName,
+  ) {
+    ecoStatsAsync.whenOrNull(
+      data: (eco) => EcoStatsSheet.show(
+        context,
+        stats: eco,
+        displayName: displayName,
+      ),
+      error: (err, _) => ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Не удалось загрузить Эко-счёт'),
+          behavior: SnackBarBehavior.floating,
         ),
       ),
     );
+
+    // If still loading — do nothing; the subtitle already shows a spinner-free
+    // indication via ecoStatsAsync.maybeWhen in the tile.
   }
 
   void _showEditSheet(BuildContext context, WidgetRef ref) {
