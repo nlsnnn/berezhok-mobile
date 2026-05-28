@@ -41,6 +41,7 @@ class EcoStatsSheet extends StatefulWidget {
 
 class _EcoStatsSheetState extends State<EcoStatsSheet> {
   final _cardKey = GlobalKey();
+  final _shareButtonKey = GlobalKey();
   bool _sharing = false;
 
   @override
@@ -107,6 +108,7 @@ class _EcoStatsSheetState extends State<EcoStatsSheet> {
               children: [
                 Expanded(
                   child: _ActionButton(
+                    key: _shareButtonKey,
                     icon: Icons.ios_share_rounded,
                     label: 'Поделиться',
                     loading: _sharing,
@@ -177,10 +179,15 @@ class _EcoStatsSheetState extends State<EcoStatsSheet> {
         _showError('Не удалось создать изображение');
         return;
       }
+      final box = _shareButtonKey.currentContext?.findRenderObject() as RenderBox?;
+      final origin = box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
       await Share.shareXFiles(
         [_bytesToXFile(bytes)],
         text: _buildShareText(),
         subject: 'Мой Эко-счёт в Бережок',
+        sharePositionOrigin: origin,
       );
     } finally {
       if (mounted) setState(() => _sharing = false);
@@ -222,6 +229,7 @@ class _ActionButton extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.loading = false,
+    super.key,
   });
 
   final IconData icon;

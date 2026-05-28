@@ -54,6 +54,17 @@ final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     initialLocation: initialLoggedIn ? AppRoutes.map : AppRoutes.splash,
     refreshListenable: notifier,
+    onException: (context, state, router) {
+      // Flutter platform channel passes the full berezhok:// URI to GoRouter,
+      // which can't match it as a route path. Convert it to a proper path.
+      final uri = state.uri;
+      if (uri.scheme == 'berezhok' && uri.host.isNotEmpty) {
+        final path = '/${uri.host}${uri.path}';
+        router.go(path);
+      } else {
+        router.go(AppRoutes.map);
+      }
+    },
     redirect: (context, state) {
       final authState = ref.read(authStateProvider);
       final onboardingState = ref.read(onboardingStateProvider);

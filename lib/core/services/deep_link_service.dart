@@ -48,13 +48,14 @@ class DeepLinkService {
       return;
     }
 
-    // Navigate to the path from the deep link
-    // Example: berezhok://orders/123 -> /orders/123
-    final path = uri.path;
-    if (path.isNotEmpty) {
+    // For custom-scheme URIs (berezhok://orders/123):
+    //   uri.host = 'orders', uri.path = '/123'
+    // For https/http URIs: uri.host = 'berezhok.ru', uri.path = '/orders/123'
+    final path = uri.host.isNotEmpty ? '/${uri.host}${uri.path}' : uri.path;
+    if (path.isNotEmpty && path != '/') {
       router.go(path);
     } else {
-      debugPrint('Deep link path is empty');
+      debugPrint('Deep link path is empty or root');
     }
   }
 
