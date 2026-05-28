@@ -6,6 +6,7 @@ import 'package:berezhok/features/catalog/domain/review.dart';
 import 'package:berezhok/features/map/data/repositories/location_repository.dart';
 import 'package:berezhok/features/map/data/repositories/mock_location_repository.dart';
 import 'package:berezhok/features/map/data/repositories/api_location_repository.dart';
+import 'package:berezhok/features/map/providers/user_location_provider.dart';
 
 /// Repository provider — switches between Mock and API based on env variable
 final locationRepositoryProvider = Provider<LocationRepository>((ref) {
@@ -24,25 +25,34 @@ final locationsProvider =
   LocationsNotifier.new,
 );
 
+// Default fallback coordinates (Moscow centre) used when GPS is unavailable.
+const _defaultLat = 55.7558;
+const _defaultLng = 37.6173;
+
 class LocationsNotifier extends AsyncNotifier<List<FoodLocation>> {
   @override
   Future<List<FoodLocation>> build() async {
     final category = ref.watch(selectedCategoryProvider);
+    // Wait for the user position — falls back to null if denied.
+    final locationResult = await ref.watch(userLocationProvider.future);
+    final position = locationResult.position;
+
     final repo = ref.read(locationRepositoryProvider);
     return repo.getLocations(
-      lat: 55.7558,
-      lng: 37.6173,
+      lat: position?.latitude ?? _defaultLat,
+      lng: position?.longitude ?? _defaultLng,
       category: category,
     );
   }
 
   Future<void> refresh({double? lat, double? lng, String? category}) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() {
+    state = await AsyncValue.guard(() async {
+      final position = ref.read(userPositionProvider);
       final repo = ref.read(locationRepositoryProvider);
       return repo.getLocations(
-        lat: lat ?? 55.7558,
-        lng: lng ?? 37.6173,
+        lat: lat ?? position?.latitude ?? _defaultLat,
+        lng: lng ?? position?.longitude ?? _defaultLng,
         category: category ?? ref.read(selectedCategoryProvider),
       );
     });

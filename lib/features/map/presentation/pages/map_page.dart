@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -10,7 +11,9 @@ import 'package:berezhok/core/theme/app_typography.dart';
 import 'package:berezhok/core/utils/formatters.dart';
 import 'package:berezhok/core/widgets/widgets.dart';
 import 'package:berezhok/features/catalog/domain/location.dart';
+import 'package:berezhok/features/map/data/services/user_location_service.dart';
 import 'package:berezhok/features/map/providers/map_providers.dart';
+import 'package:berezhok/features/map/providers/user_location_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Map page — the first tab of the bottom navigation.
@@ -40,6 +43,21 @@ class _MapPageState extends ConsumerState<MapPage>
   void dispose() {
     _mapController.dispose();
     super.dispose();
+  }
+
+  // Animate to user location once when it first becomes available.
+  void _onUserLocationLoaded(
+    AsyncValue<UserLocationResult>? prev,
+    AsyncValue<UserLocationResult> next,
+  ) {
+    final prevHas = prev?.valueOrNull?.hasLocation ?? false;
+    final nextPosition = next.valueOrNull?.position;
+    if (!prevHas && nextPosition != null) {
+      _mapController.move(
+        LatLng(nextPosition.latitude, nextPosition.longitude),
+        _initialZoom,
+      );
+    }
   }
 
   // ------ Markers ------
@@ -92,15 +110,49 @@ class _MapPageState extends ConsumerState<MapPage>
   // ------ Actions ------
 
   void _goToMyLocation() {
-    // In production, get real location via geolocator.
-    // For now, animate to Moscow center.
-    _mapController.move(_moscowCenter, _initialZoom);
+    final position = ref.read(userPositionProvider);
+    if (position != null) {
+      _mapController.move(
+        LatLng(position.latitude, position.longitude),
+        _initialZoom,
+      );
+    } else {
+      ref.read(userLocationProvider.notifier).refresh();
+    }
+  }
+
+  List<Marker> _buildUserMarker(Position position) {
+    return [
+      Marker(
+        point: LatLng(position.latitude, position.longitude),
+        width: 20,
+        height: 20,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 3),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withValues(alpha: 0.35),
+                blurRadius: 8,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(userLocationProvider, _onUserLocationLoaded);
+
     final locationsAsync = ref.watch(locationsProvider);
     final selectedLocation = ref.watch(selectedMapLocationProvider);
+    final userPosition = ref.watch(userPositionProvider);
+    final locationResult = ref.watch(userLocationProvider).valueOrNull;
 
     return Scaffold(
       body: Stack(
@@ -122,6 +174,8 @@ class _MapPageState extends ConsumerState<MapPage>
                   userAgentPackageName: 'ru.berezhok.berezhok',
                 ),
                 MarkerLayer(markers: _buildMarkers(locations)),
+                if (userPosition != null)
+                  MarkerLayer(markers: _buildUserMarker(userPosition)),
               ],
             ),
             loading: () => const Center(
@@ -138,6 +192,19 @@ class _MapPageState extends ConsumerState<MapPage>
             right: 0,
             child: const _MapTopOverlay(),
           ),
+
+          // Permission denied banner — shown below the filter chips
+          if (locationResult != null &&
+              locationResult.status == LocationStatus.deniedForever)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 122,
+              left: AppSpacing.lg,
+              right: AppSpacing.lg,
+              child: _LocationDeniedBanner(
+                onTap: () =>
+                    ref.read(userLocationProvider.notifier).openSettings(),
+              ),
+            ),
 
           // ---------- My location button ----------
           Positioned(
@@ -213,11 +280,14 @@ class _CategoryFilterBar extends ConsumerWidget {
   }
 }
 
-class _MapTopOverlay extends StatelessWidget {
+class _MapTopOverlay extends ConsumerWidget {
   const _MapTopOverlay();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locationAsync = ref.watch(userLocationProvider);
+    final hasLocation = locationAsync.valueOrNull?.hasLocation ?? false;
+
     return Column(
       children: [
         Padding(
@@ -235,11 +305,16 @@ class _MapTopOverlay extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.search_rounded, color: AppColors.primary),
+                Icon(
+                  hasLocation
+                      ? Icons.near_me_rounded
+                      : Icons.search_rounded,
+                  color: AppColors.primary,
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    'Еда рядом в Москве',
+                    hasLocation ? 'Еда рядом с вами' : 'Еда рядом в Москве',
                     style: AppTypography.subtitle2,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -446,6 +521,47 @@ class _MyLocationButton extends StatelessWidget {
           Icons.my_location,
           color: AppColors.primary,
           size: 22,
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Location permission denied banner
+// ---------------------------------------------------------------------------
+
+class _LocationDeniedBanner extends StatelessWidget {
+  const _LocationDeniedBanner({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          border: Border.all(color: AppColors.divider),
+          boxShadow: AppSpacing.cardShadow,
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.location_off, color: AppColors.textSecondary, size: 20),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                'Доступ к геолокации отключён. Нажмите, чтобы открыть настройки.',
+                style: AppTypography.caption,
+              ),
+            ),
+          ],
         ),
       ),
     );

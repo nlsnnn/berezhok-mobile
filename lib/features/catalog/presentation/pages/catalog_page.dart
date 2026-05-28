@@ -7,6 +7,7 @@ import 'package:berezhok/core/theme/app_typography.dart';
 import 'package:berezhok/core/widgets/widgets.dart';
 import 'package:berezhok/features/catalog/presentation/widgets/location_card.dart';
 import 'package:berezhok/features/map/providers/map_providers.dart';
+import 'package:berezhok/features/map/providers/user_location_provider.dart';
 
 /// Sort order for the catalog list.
 enum SortBy { distance, rating }
@@ -49,21 +50,32 @@ class CatalogPage extends ConsumerWidget {
                           children: [
                             Text('Каталог', style: AppTypography.heading2),
                             const SizedBox(height: AppSpacing.xs),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.near_me_rounded,
-                                  size: 16,
-                                  color: AppColors.primary,
-                                ),
-                                const SizedBox(width: AppSpacing.xs),
-                                Text(
-                                  'Москва · боксы рядом',
-                                  style: AppTypography.body2.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final hasLocation = ref
+                                        .watch(userLocationProvider)
+                                        .valueOrNull
+                                        ?.hasLocation ??
+                                    false;
+                                return Row(
+                                  children: [
+                                    Icon(
+                                      Icons.near_me_rounded,
+                                      size: 16,
+                                      color: AppColors.primary,
+                                    ),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    Text(
+                                      hasLocation
+                                          ? 'Рядом с вами · боксы'
+                                          : 'Москва · боксы рядом',
+                                      style: AppTypography.body2.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                           ],
                         ),

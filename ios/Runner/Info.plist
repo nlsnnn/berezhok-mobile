@@ -41,6 +41,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Berezhok использует геолокацию, чтобы показывать ближайшие заведения с едой</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Berezhok использует геолокацию, чтобы показывать ближайшие заведения с едой</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
