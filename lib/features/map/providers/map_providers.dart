@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:berezhok/core/api/api_providers.dart';
 import 'package:berezhok/features/catalog/domain/location.dart';
@@ -33,16 +34,17 @@ class LocationsNotifier extends AsyncNotifier<List<FoodLocation>> {
   @override
   Future<List<FoodLocation>> build() async {
     final category = ref.watch(selectedCategoryProvider);
-    // Wait for the user position — falls back to null if denied.
     final locationResult = await ref.watch(userLocationProvider.future);
     final position = locationResult.position;
 
     final repo = ref.read(locationRepositoryProvider);
-    return repo.getLocations(
+    final locations = await repo.getLocations(
       lat: position?.latitude ?? _defaultLat,
       lng: position?.longitude ?? _defaultLng,
       category: category,
     );
+
+    return _withDistances(locations, position);
   }
 
   Future<void> refresh({double? lat, double? lng, String? category}) async {
@@ -50,12 +52,29 @@ class LocationsNotifier extends AsyncNotifier<List<FoodLocation>> {
     state = await AsyncValue.guard(() async {
       final position = ref.read(userPositionProvider);
       final repo = ref.read(locationRepositoryProvider);
-      return repo.getLocations(
+      final locations = await repo.getLocations(
         lat: lat ?? position?.latitude ?? _defaultLat,
         lng: lng ?? position?.longitude ?? _defaultLng,
         category: category ?? ref.read(selectedCategoryProvider),
       );
+      return _withDistances(locations, position);
     });
+  }
+
+  List<FoodLocation> _withDistances(
+    List<FoodLocation> locations,
+    Position? position,
+  ) {
+    if (position == null) return locations;
+    return locations.map((loc) {
+      final meters = Geolocator.distanceBetween(
+        position.latitude,
+        position.longitude,
+        loc.latitude,
+        loc.longitude,
+      );
+      return loc.copyWith(distance: meters);
+    }).toList();
   }
 }
 

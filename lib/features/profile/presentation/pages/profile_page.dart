@@ -101,19 +101,6 @@ class ProfilePage extends ConsumerWidget {
                   subtitle: profile.displayName,
                   onTap: () => _showEditSheet(context, ref),
                 ),
-                _MenuTile(
-                  icon: Icons.notifications_none_rounded,
-                  title: 'Уведомления',
-                  subtitle: 'Включены',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Скоро будет доступно'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                ),
                 const SizedBox(height: AppSpacing.xxl),
                 Padding(
                   padding: AppSpacing.screenPadding,
@@ -253,6 +240,7 @@ class ProfilePage extends ConsumerWidget {
   void _showAboutSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppSpacing.radiusXl),

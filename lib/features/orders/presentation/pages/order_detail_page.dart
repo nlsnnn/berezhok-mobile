@@ -25,13 +25,17 @@ class OrderDetailPage extends ConsumerStatefulWidget {
 
 class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   bool _isActionLoading = false;
+  bool _didInvalidate = false;
 
   @override
-  void initState() {
-    super.initState();
-    // Сбрасываем кэш детализации при каждом входе на страницу,
-    // чтобы статус всегда отражал актуальное состояние с сервера.
-    ref.invalidate(orderDetailProvider(widget.orderId));
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_didInvalidate) {
+      _didInvalidate = true;
+      // Сбрасываем кэш детализации при каждом входе на страницу,
+      // чтобы статус всегда отражал актуальное состояние с сервера.
+      ref.invalidate(orderDetailProvider(widget.orderId));
+    }
   }
 
   @override
@@ -246,6 +250,11 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
     try {
       await ref.read(ordersProvider.notifier).confirmPickup(orderId);
       ref.invalidate(orderDetailProvider(orderId));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Не удалось подтвердить получение. Попробуйте ещё раз.')),
+      );
     } finally {
       if (mounted) setState(() => _isActionLoading = false);
     }

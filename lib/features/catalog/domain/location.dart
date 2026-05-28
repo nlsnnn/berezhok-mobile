@@ -115,6 +115,25 @@ class FoodLocation {
         if (pins.isNotEmpty) 'pins': pins.map((p) => p.toJson()).toList(),
       };
 
+  FoodLocation copyWith({double? distance}) => FoodLocation(
+        id: id,
+        name: name,
+        category: category,
+        address: address,
+        latitude: latitude,
+        longitude: longitude,
+        distance: distance ?? this.distance,
+        rating: rating,
+        logoUrl: logoUrl,
+        coverImageUrl: coverImageUrl,
+        galleryUrls: galleryUrls,
+        workingHours: workingHours,
+        phone: phone,
+        activeBoxesCount: activeBoxesCount,
+        activeBoxes: activeBoxes,
+        pins: pins,
+      );
+
   @override
   String toString() => 'FoodLocation(id: $id, name: $name, address: $address)';
 
