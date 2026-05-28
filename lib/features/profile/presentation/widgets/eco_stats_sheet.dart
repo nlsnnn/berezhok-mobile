@@ -42,6 +42,7 @@ class EcoStatsSheet extends StatefulWidget {
 class _EcoStatsSheetState extends State<EcoStatsSheet> {
   final _cardKey = GlobalKey();
   final _shareButtonKey = GlobalKey();
+  final _saveButtonKey = GlobalKey();
   bool _sharing = false;
 
   @override
@@ -118,6 +119,7 @@ class _EcoStatsSheetState extends State<EcoStatsSheet> {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: _ActionButton(
+                    key: _saveButtonKey,
                     icon: Icons.download_rounded,
                     label: 'Сохранить',
                     onTap: _saveCard,
@@ -202,9 +204,14 @@ class _EcoStatsSheetState extends State<EcoStatsSheet> {
     }
     // Open native share sheet without caption — user picks "Save to Photos" /
     // "Save to Files" on iOS or the system handler on Android.
+    final box = _saveButtonKey.currentContext?.findRenderObject() as RenderBox?;
+    final origin = box != null
+        ? box.localToGlobal(Offset.zero) & box.size
+        : null;
     await Share.shareXFiles(
       [_bytesToXFile(bytes)],
       subject: 'Эко-счёт',
+      sharePositionOrigin: origin,
     );
   }
 
