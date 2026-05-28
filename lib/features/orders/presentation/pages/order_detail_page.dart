@@ -27,6 +27,14 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   bool _isActionLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Сбрасываем кэш детализации при каждом входе на страницу,
+    // чтобы статус всегда отражал актуальное состояние с сервера.
+    ref.invalidate(orderDetailProvider(widget.orderId));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final orderAsync = ref.watch(orderDetailProvider(widget.orderId));
     final reviewedIds = ref.watch(reviewedOrderIdsProvider);
@@ -37,6 +45,10 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => context.pop(),
+        ),
         title: Text('Заказ', style: AppTypography.heading3),
       ),
       body: orderAsync.when(
@@ -66,7 +78,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
             icon: Icons.chat_bubble_outline,
             variant: AppButtonVariant.outline,
             fullWidth: true,
-            onPressed: () => context.go('/orders/${order.id}/chat'),
+            onPressed: () => context.push('/orders/${order.id}/chat'),
           ),
           const SizedBox(height: AppSpacing.xxl),
         ],

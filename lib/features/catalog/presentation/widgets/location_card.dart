@@ -20,7 +20,7 @@ class LocationCard extends StatelessWidget {
 
     return AppCard(
       padding: EdgeInsets.zero,
-      onTap: () => context.go('/catalog/${location.id}'),
+      onTap: () => context.push('/catalog/${location.id}'),
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,

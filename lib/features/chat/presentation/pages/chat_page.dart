@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:berezhok/core/theme/app_colors.dart';
 import 'package:berezhok/core/theme/app_spacing.dart';
@@ -51,6 +52,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: chatAsync.when(
         loading: () => const Center(

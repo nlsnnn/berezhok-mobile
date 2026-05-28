@@ -21,8 +21,10 @@ class SurpriseBox {
     this.imageUrl,
   });
 
-  int get discountPercent =>
-      ((1 - discountPrice / originalPrice) * 100).round();
+  int get discountPercent {
+    if (originalPrice <= 0) return 0;
+    return ((1 - discountPrice / originalPrice) * 100).round();
+  }
 
   String get pickupTimeFormatted => '$pickupTimeStart – $pickupTimeEnd';
 

@@ -29,7 +29,7 @@ class OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      onTap: () => context.go('/orders/${order.id}'),
+      onTap: () => context.push('/orders/${order.id}'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

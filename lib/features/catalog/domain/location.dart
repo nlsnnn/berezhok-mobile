@@ -81,7 +81,7 @@ class FoodLocation {
               .toList() ??
           const [],
       workingHours: (json['working_hours'] as Map<String, dynamic>?)
-          ?.map((k, v) => MapEntry(k, v as String)),
+          ?.map((k, v) => MapEntry(_normalizeWeekdayKey(k), v as String)),
       phone: json['phone'] as String?,
       activeBoxesCount: (json['active_boxes_count'] as num?)?.toInt() ??
           ((json['active_boxes'] as List<dynamic>?)?.length ?? 0),
@@ -159,3 +159,16 @@ class LocationRating {
   String toString() =>
       'LocationRating(average: $average, totalReviews: $totalReviews)';
 }
+
+const _weekdayKeyMap = <String, String>{
+  'mon': 'mon', 'monday': 'mon', '1': 'mon',
+  'tue': 'tue', 'tuesday': 'tue', '2': 'tue',
+  'wed': 'wed', 'wednesday': 'wed', '3': 'wed',
+  'thu': 'thu', 'thursday': 'thu', '4': 'thu',
+  'fri': 'fri', 'friday': 'fri', '5': 'fri',
+  'sat': 'sat', 'saturday': 'sat', '6': 'sat',
+  'sun': 'sun', 'sunday': 'sun', '7': 'sun', '0': 'sun',
+};
+
+String _normalizeWeekdayKey(String key) =>
+    _weekdayKeyMap[key.toLowerCase()] ?? key;
