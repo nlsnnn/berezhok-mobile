@@ -47,13 +47,13 @@ class ChatRealtimeError extends ChatRealtimeEvent {
 }
 
 class WebSocketChatRealtimeClient implements ChatRealtimeClient {
-  final String _chatBaseUrl;
+  final String _chatWsBaseUrl;
   final AuthTokenProvider _authTokenProvider;
 
   WebSocketChatRealtimeClient({
-    required String chatBaseUrl,
+    required String chatWsBaseUrl,
     required AuthTokenProvider authTokenProvider,
-  }) : _chatBaseUrl = chatBaseUrl,
+  }) : _chatWsBaseUrl = chatWsBaseUrl,
        _authTokenProvider = authTokenProvider;
 
   @override
@@ -69,20 +69,13 @@ class WebSocketChatRealtimeClient implements ChatRealtimeClient {
   }
 
   Uri _buildWsUri(String orderId, String token) {
-    final base = Uri.parse(_chatBaseUrl);
-    final scheme = switch (base.scheme) {
-      'https' => 'wss',
-      'http' => 'ws',
-      'wss' || 'ws' => base.scheme,
-      _ => 'ws',
-    };
+    final base = Uri.parse(_chatWsBaseUrl);
     final basePath = base.path.endsWith('/')
         ? base.path.substring(0, base.path.length - 1)
         : base.path;
 
     return base.replace(
-      scheme: scheme,
-      path: '$basePath/ws/orders/$orderId',
+      path: '$basePath/orders/$orderId',
       queryParameters: {'token': token},
     );
   }

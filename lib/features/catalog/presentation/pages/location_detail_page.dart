@@ -89,8 +89,19 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
         data: (location) {
           final boxes = location.activeBoxes;
 
-          return CustomScrollView(
-            slivers: [
+          return RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: () async {
+              ref.invalidate(locationDetailProvider(widget.locationId));
+              ref.invalidate(locationReviewsProvider(widget.locationId));
+              await Future.wait([
+                ref.read(locationDetailProvider(widget.locationId).future),
+                ref.read(locationReviewsProvider(widget.locationId).future),
+              ]);
+            },
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
               // Cover image area
               _CoverSection(location: location),
 
@@ -307,6 +318,7 @@ class _LocationDetailPageState extends ConsumerState<LocationDetailPage> {
                 ),
               ),
             ],
+            ),
           );
         },
       ),

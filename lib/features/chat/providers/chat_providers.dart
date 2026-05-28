@@ -64,6 +64,10 @@ final chatBaseUrlProvider = Provider<String>((ref) {
   return dotenv.get('CHAT_BASE_URL', fallback: 'http://localhost:8090');
 });
 
+final chatWsBaseUrlProvider = Provider<String>((ref) {
+  return dotenv.get('CHAT_WS_BASE_URL', fallback: 'ws://localhost:8090/ws');
+});
+
 final chatApiClientProvider = Provider<ApiClient>((ref) {
   final baseUrl = ref.watch(chatBaseUrlProvider);
   final environment = ref.watch(environmentProvider);
@@ -96,7 +100,7 @@ final chatRealtimeClientProvider = Provider<ChatRealtimeClient>((ref) {
   if (useMock) return MockChatRealtimeClient();
 
   return WebSocketChatRealtimeClient(
-    chatBaseUrl: ref.watch(chatBaseUrlProvider),
+    chatWsBaseUrl: ref.watch(chatWsBaseUrlProvider),
     authTokenProvider: ref.watch(authTokenProvider),
   );
 });
@@ -110,6 +114,8 @@ class ChatController extends FamilyAsyncNotifier<ChatState, String> {
   ChatRealtimeConnection? _connection;
   StreamSubscription<ChatRealtimeEvent>? _eventsSubscription;
   bool _disposed = false;
+  int _reconnectAttempts = 0;
+  static const _maxReconnectAttempts = 5;
 
   @override
   Future<ChatState> build(String orderId) async {
@@ -121,6 +127,9 @@ class ChatController extends FamilyAsyncNotifier<ChatState, String> {
 
     final page = await _fetchMessages(orderId);
     final connectionStatus = await _connect(orderId);
+    if (connectionStatus == ChatConnectionStatus.connected) {
+      _reconnectAttempts = 0;
+    }
     return ChatState(
       messages: page.messages,
       hasOlderMessages: page.hasOlderMessages,
@@ -161,7 +170,8 @@ class ChatController extends FamilyAsyncNotifier<ChatState, String> {
     if (trimmed.isEmpty ||
         current == null ||
         current.isSending ||
-        current.isClosed) {
+        current.isClosed ||
+        current.connectionStatus != ChatConnectionStatus.connected) {
       return;
     }
 
@@ -190,9 +200,19 @@ class ChatController extends FamilyAsyncNotifier<ChatState, String> {
     }
   }
 
-  Future<void> reconnect() async {
+  Future<void> reconnect({bool manual = false}) async {
+    if (manual) _reconnectAttempts = 0;
     final current = state.valueOrNull;
     if (current == null || current.isClosed) return;
+    if (_reconnectAttempts >= _maxReconnectAttempts) {
+      state = AsyncData(
+        current.copyWith(connectionStatus: ChatConnectionStatus.disconnected),
+      );
+      return;
+    }
+
+    _reconnectAttempts++;
+    final delay = Duration(seconds: _reconnectAttempts * 2);
 
     state = AsyncData(
       current.copyWith(
@@ -201,9 +221,15 @@ class ChatController extends FamilyAsyncNotifier<ChatState, String> {
       ),
     );
 
+    await Future<void>.delayed(delay);
+    if (_disposed) return;
+
     try {
       final page = await _fetchMessages(arg);
       final status = await _connect(arg);
+      if (status == ChatConnectionStatus.connected) {
+        _reconnectAttempts = 0;
+      }
       state = AsyncData(
         current.copyWith(
           messages: page.messages,

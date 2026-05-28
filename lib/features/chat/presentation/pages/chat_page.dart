@@ -72,7 +72,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
               errorMessage: state.errorMessage,
               onReconnect: () => ref
                   .read(chatControllerProvider(widget.orderId).notifier)
-                  .reconnect(),
+                  .reconnect(manual: true),
             ),
             Expanded(
               child: _MessagesList(
@@ -312,7 +312,8 @@ class _MessageComposerState extends State<_MessageComposer> {
   @override
   Widget build(BuildContext context) {
     final isSending = widget.state.isSending || _isSubmitting;
-    final isEnabled = !isSending && !widget.state.isClosed;
+    final canSend = widget.state.connectionStatus == ChatConnectionStatus.connected;
+    final isEnabled = !isSending && !widget.state.isClosed && canSend;
 
     return SafeArea(
       top: false,
@@ -341,6 +342,8 @@ class _MessageComposerState extends State<_MessageComposer> {
                 decoration: InputDecoration(
                   hintText: widget.state.isClosed
                       ? 'Чат закрыт'
+                      : !canSend
+                      ? 'Нет соединения...'
                       : 'Напишите сообщение',
                   filled: true,
                   fillColor: AppColors.surface,
@@ -390,7 +393,8 @@ class _MessageComposerState extends State<_MessageComposer> {
     if (widget.controller.text.trim().isEmpty ||
         widget.state.isSending ||
         _isSubmitting ||
-        widget.state.isClosed) {
+        widget.state.isClosed ||
+        widget.state.connectionStatus != ChatConnectionStatus.connected) {
       return;
     }
 

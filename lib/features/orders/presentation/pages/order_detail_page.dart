@@ -66,12 +66,20 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
     );
   }
 
+  Future<void> _refresh() async {
+    ref.invalidate(orderDetailProvider(widget.orderId));
+    await ref.read(orderDetailProvider(widget.orderId).future);
+  }
+
   Widget _buildContent(Order order, Set<String> reviewedIds) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xl,
-        vertical: AppSpacing.lg,
-      ),
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: _refresh,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl,
+          vertical: AppSpacing.lg,
+        ),
       children: [
         _OrderHero(order: order),
         const SizedBox(height: AppSpacing.xxl),
@@ -164,6 +172,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
         _buildActions(order, reviewedIds),
         const SizedBox(height: AppSpacing.xxxl),
       ],
+    ),
     );
   }
 
